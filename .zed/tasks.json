@@ -1,0 +1,35 @@
+// Project tasks configuration. See https://zed.dev/docs/tasks for documentation.
+//
+// Example:
+[
+  // Enable stylua's LSP mode
+  {
+    "label": "stylua: enable lsp mode",
+    "command": "stylua --lsp",
+  },
+  // Serve the project using rojo
+  {
+    "label": "rojo: Serve",
+    "command": "rojo --version; rojo serve",
+  },
+  // Autogenerate sourcemap to feed for Luau LSP
+  {
+    "label": "rojo: Autogenerate sourcemap",
+    "command": "rojo sourcemap --watch --include-non-scripts --output sourcemap.json",
+  },
+  // You can build and open in one command with "rojo build ...; open a.rbxl on macOS.
+  {
+    "label": "rojo: Build",
+    "command": "rojo build --output a.rbxl",
+  },
+  // Update wally package
+  {
+    "label": "wally: update package",
+    "command": "wally install",
+  },
+  // lune run sync.luau
+  {
+    "label": "sync: sync and autogenerate sourcemap",
+    "command": "lune run sync",
+  },
+]

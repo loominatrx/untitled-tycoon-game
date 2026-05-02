@@ -1,0 +1,16 @@
+# Generic information
+FriendlyName: Iron Mine
+Description: apa aja deh
+
+# Shop attributes
+Price: 10 # how much price the product will be?
+OnSale: true # whether it is sold on shop?
+CanBeSold: true # can this item be sold?
+
+# Stats
+ItemType: Droppers
+ItemTier: Common
+
+DropRate: 1
+OreValue: 1
+OreSize: 1

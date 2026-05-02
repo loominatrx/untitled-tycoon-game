@@ -1,0 +1,16 @@
+# Project place file
+/*.rbxl
+/*.rbxlx
+
+# Roblox Studio lock files
+/*.rbxlx.lock
+/*.rbxl.lock
+
+# Wally
+Packages/
+ServerPackages/
+wally.lock
+
+# rojo sourcemap
+# this should be automatically generated
+sourcemap.json

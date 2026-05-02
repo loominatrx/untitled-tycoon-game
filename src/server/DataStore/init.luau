@@ -1,0 +1,75 @@
+local ProfileStore = require(game.ServerScriptService.Packages.ProfileStore)
+
+-- The PROFILE_TEMPLATE table is what new profile "Profile.Data" will default to:
+local PROFILE_TEMPLATE = require(script.Template)
+
+local Players = game:GetService('Players')
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
+local Promise = require(ReplicatedStorage.Packages.Promise)
+
+local PlayerStore = ProfileStore.New('PlayerStore', PROFILE_TEMPLATE)
+local Profiles: { [Player]: typeof(PlayerStore:StartSessionAsync()) } = {}
+
+if RunService:IsStudio() == true then
+    PlayerStore = PlayerStore.Mock
+end
+
+local DataManager = {}
+
+-- Hook this event as early as possible
+Players.PlayerRemoving:Connect(function(player)
+    local profile = Profiles[player]
+    if profile ~= nil then
+        profile:EndSession()
+    end
+end)
+
+function DataManager.LoadData(player: Player, saveIndex: number)
+    return Promise.new(function(resolve, reject)
+        -- Start a profile session for this player's data:
+
+        local profile = PlayerStore:StartSessionAsync(`{player.UserId}#{saveIndex}`, {
+            Cancel = function()
+                return player.Parent ~= Players
+            end,
+        })
+
+        -- Handling new profile session or failure to start it:
+
+        if profile ~= nil then
+            profile:AddUserId(player.UserId) -- GDPR compliance
+            profile:Reconcile() -- Fill in missing variables from PROFILE_TEMPLATE (optional)
+
+            profile.OnSessionEnd:Connect(function()
+                Profiles[player] = nil
+                player:Kick(`Profile session end - Please rejoin`)
+            end)
+
+            if player.Parent == Players then
+                Profiles[player] = profile
+                print(`Profile loaded for {player.DisplayName}!`)
+                resolve(profile)
+            else
+                -- The player has left before the profile session started
+                profile:EndSession()
+            end
+        else
+            -- This condition should only happen when the Roblox server is shutting down
+            player:Kick(`Profile load fail - Please rejoin`)
+            reject('Profile load failed')
+        end
+    end)
+end
+
+-- Data returned by this method is writable. Please use it wisely.
+function DataManager.GetProfile(player: Player)
+    return Profiles[player]
+end
+
+-- Data returned by this method is writable. Please use it wisely.
+function DataManager.GetData(player: Player)
+    return Profiles[player].Data
+end
+
+return DataManager

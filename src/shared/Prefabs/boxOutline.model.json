@@ -1,0 +1,10 @@
+{
+    "className": "SelectionBox",
+    "Color3": [
+        13,
+        105,
+        172
+    ],
+    "SurfaceTransparency": 1,
+    "LineThickness": 0.05
+}

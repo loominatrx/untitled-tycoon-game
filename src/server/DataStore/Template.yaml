@@ -1,0 +1,28 @@
+# data template
+
+# basic stats
+Money: 1000
+Life: 1
+Rebirths: 0
+ResearchPoints: 0
+
+# layout
+SavedLayouts:
+  0: []
+  1: []
+  2: []
+  3: []
+  4: []
+  5: []
+
+Inventory:
+  IronMine: 1
+  BasicConveyor: 10
+  BasicFurnace: 1
+  CellFurnace: 1
+  SpawnBeacon: 1
+
+Options:
+  OreLimit: 20
+  PlacementSmoothing: true
+  DebugMode: false

@@ -1,0 +1,19 @@
+[package]
+name = "mas/untitled-tycoon-game"
+version = "0.1.0"
+registry = "https://github.com/UpliftGames/wally-index"
+realm = "shared"
+
+[dependencies]
+Fusion = "elttob/fusion@0.3.0"
+EnumList = "sleitnick/enum-list@2.1.0"
+Input = "sleitnick/input@^3"
+Promise = "evaera/promise@4.0.0"
+Signal = "sleitnick/signal@^2"
+TableUtil = "sleitnick/table-util@^1"
+Trove = "sleitnick/trove@^1"
+TypedRemote = "sleitnick/typed-remote@0.3.0"
+TopbarPlus = "1foreverhd/topbarplus@3.4.0"
+
+[server-dependencies]
+ProfileStore = "lm-loleris/profilestore@1.0.3"
