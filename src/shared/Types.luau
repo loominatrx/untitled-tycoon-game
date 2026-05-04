@@ -11,8 +11,9 @@ export type Dictionary<K = any, V = any> = { [K]: V }
 export type Array<V = any> = Dictionary<number, V>
 
 --> objects
-export type SerializedVector3 = { x: number, y: number, z: number }
 export type Plot = Model & { Objects: Folder, Base: BasePart, Spawn: SpawnLocation }
+export type LayoutData = { number | string }
+export type Layout = { LayoutData }
 
 export type ItemMetadata = {
     -- Generic descriptions
@@ -32,7 +33,7 @@ export type ItemMetadata = {
 export type DropperStats = {
     OreValue: number,
     DropRate: number,
-    OreSize: number
+    OreSize: number,
 }
 
 export type DropperMetadata = ItemMetadata & DropperStats

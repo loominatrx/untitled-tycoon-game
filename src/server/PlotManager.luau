@@ -57,7 +57,7 @@ function plotManager.SpawnPlot(player: Player): Model?
     plot.Parent = workspace.Plots
     plots[player.UserId] = plot
 
-    PlayerPlacementClass[player.UserId] = PlacementModule.new(plot.Base.Position)
+    PlayerPlacementClass[player.UserId] = PlacementModule.new(plot.Base)
 
     return plot
 end
@@ -69,8 +69,17 @@ end
 function plotManager.WithdrawObject(player: Player, object: Model)
     local plot: Types.Plot = plotManager.GetPlot(player)
     local objects: Folder = plot.Objects
+    local Placement = PlayerPlacementClass[player.UserId]
 
     if object.Parent == objects then
+        local position = object:GetPivot().Position
+        local hitboxSize = object.Hitbox.Size
+
+        local x, z = Placement:WorldToGrid(position)
+
+        Placement:Free(x, z, hitboxSize.X, hitboxSize.Z)
+        Remotes.Base.GridFreed:FireClient(player, x, z, hitboxSize.X, hitboxSize.Z)
+
         object:Destroy()
 
         print('adding item to inventory')
@@ -87,57 +96,63 @@ function plotManager.WithdrawAll(player: Player)
     end
 end
 
-function plotManager.GetSavedLayouts(player: Player)
+function plotManager.GetSavedLayouts(player: Player): Types.Dictionary<string, Types.Layout>
     local data = DataStore.GetData(player)
     return data.SavedLayouts
 end
 
-function plotManager.GetSavedLayout(player: Player, index: number)
-    return plotManager.GetSavedLayouts(player)[index]
+function plotManager.GetSavedLayout(player: Player, index: number): Types.Layout
+    return plotManager.GetSavedLayouts(player)[tostring(index)]
 end
 
 function plotManager.LoadLayout(player: Player, index: number)
     assert(index >= 0 and index <= 5, 'unable to access the specified layout.')
-    local plot = plotManager.GetPlot(player)
     local layout = plotManager.GetSavedLayout(player, index)
+    local Placement = PlayerPlacementClass[player.UserId]
 
-    -- for _, objectInfo in layout do
-    --     local position = deserializeVector3(objectInfo.position)
-    --     local rotation = deserializeVector3(objectInfo.rotation)
+    for _, objectInfo in layout do
+        local name = objectInfo[1] :: string
+        local positionX, positionZ = objectInfo[2] :: number, objectInfo[3] :: number
+        local rotation = objectInfo[4] :: number
 
-    --     local relativeCFrame = CFrame.new(position) * CFrame.Angles(rotation.X, rotation.Y, rotation.Z)
-    --     local absoluteCFrame = plot:GetPivot():ToWorldSpace(relativeCFrame)
+        local absolutePosition = Placement:GridToWorld(positionX, positionZ)
 
-    --     plotManager.PlaceObject(player, objectInfo.name, absoluteCFrame)
-    -- end
-
-    Remotes.Base.BaseLoaded:FireClient(player, plot)
+        plotManager.PlaceObject(player, name, absolutePosition, rotation)
+    end
 end
 
 function plotManager.SaveLayout(player: Player, index: number)
     assert(index >= 0 and index <= 5, 'unable to access the specified layout.')
     local plot = plotManager.GetPlot(player)
     local layout = plotManager.GetSavedLayout(player, index)
+    local Placement = PlayerPlacementClass[player.UserId]
 
     table.clear(layout)
-    -- for _, object in plot.Objects:GetChildren() do
-    --     if object:IsA('Model') then
-    --         local objectCF = plot:GetPivot():ToObjectSpace(object:GetPivot())
-    --         local info = {
-    --             name = object.Name,
-    --             position = serializeVector3(objectCF.Position),
-    --             rotation = serializeVector3(Vector3.new(objectCF:ToOrientation())),
-    --         }
-    --         table.insert(layout, info)
-    --     end
-    -- end
+    for _, object in plot.Objects:GetChildren() do
+        if object:IsA('Model') then
+            local objectCF = object:GetPivot()
+            local absoluteX, absoluteZ = Placement:WorldToGrid(objectCF.Position)
+            local orientation = Vector3.new(objectCF:ToOrientation())
+
+            local info = {
+                object.Name,
+                absoluteX,
+                absoluteZ,
+                math.round(math.deg(orientation.Y)),
+            }
+
+            print(info)
+            table.insert(layout, info)
+        end
+    end
 end
 
 -- object placement
 
-function plotManager.PlaceObject(player: Player, name: string, targetCF: CFrame)
+function plotManager.PlaceObject(player: Player, name: string, position: Vector3, rotation: number)
     local object: Model? = Prefabs:FindFirstChild(name, true)
     local plot = plotManager.GetPlot(player)
+    local Placement = PlayerPlacementClass[player.UserId]
 
     if not object or not plot then
         return
@@ -148,10 +163,19 @@ function plotManager.PlaceObject(player: Player, name: string, targetCF: CFrame)
     -- end
 
     local newObject = object:Clone()
-    newObject:PivotTo(targetCF)
+    local hitboxSize = newObject.Hitbox.Size
+    local PlacementData = Placement:GetPlacement(position, hitboxSize, rotation)
+
+    if not PlacementData.CanPlace then
+        return
+    end
+
+    newObject:PivotTo(PlacementData.CFrame)
 
     print('success!')
 
+    Placement:Occupy(PlacementData.X, PlacementData.Z, hitboxSize.X, hitboxSize.Z)
+    Remotes.Base.GridOccupied:FireClient(player, PlacementData.X, PlacementData.Z, hitboxSize.X, hitboxSize.Z)
     newObject:SetAttribute('Owner', player.UserId)
     newObject.Parent = plot.Objects
     -- Inventory.removeItem(player, name)

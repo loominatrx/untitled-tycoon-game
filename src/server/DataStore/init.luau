@@ -4,26 +4,18 @@ local ProfileStore = require(game.ServerScriptService.Packages.ProfileStore)
 local PROFILE_TEMPLATE = require(script.Template)
 
 local Players = game:GetService('Players')
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local RunService = game:GetService("RunService")
+local ReplicatedStorage = game:GetService('ReplicatedStorage')
+local RunService = game:GetService('RunService')
 local Promise = require(ReplicatedStorage.Packages.Promise)
 
-local PlayerStore = ProfileStore.New('PlayerStore', PROFILE_TEMPLATE)
+local PlayerStore = ProfileStore.New('TestStore', PROFILE_TEMPLATE)
 local Profiles: { [Player]: typeof(PlayerStore:StartSessionAsync()) } = {}
 
-if RunService:IsStudio() == true then
-    PlayerStore = PlayerStore.Mock
-end
+-- if RunService:IsStudio() == true then
+--     PlayerStore = PlayerStore.Mock
+-- end
 
 local DataManager = {}
-
--- Hook this event as early as possible
-Players.PlayerRemoving:Connect(function(player)
-    local profile = Profiles[player]
-    if profile ~= nil then
-        profile:EndSession()
-    end
-end)
 
 function DataManager.LoadData(player: Player, saveIndex: number)
     return Promise.new(function(resolve, reject)
@@ -70,6 +62,13 @@ end
 -- Data returned by this method is writable. Please use it wisely.
 function DataManager.GetData(player: Player)
     return Profiles[player].Data
+end
+
+function DataManager.ReleaseData(player: Player)
+    local profile = Profiles[player]
+    if profile ~= nil then
+        profile:EndSession()
+    end
 end
 
 return DataManager

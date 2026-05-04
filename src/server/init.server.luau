@@ -1,4 +1,6 @@
 local Players = game:GetService('Players')
+local ReplicatedStorage = game:GetService('ReplicatedStorage')
+local Remotes = require(ReplicatedStorage.Shared.Remotes)
 local DataStore = require(script.DataStore)
 local PlotManager = require(script.PlotManager)
 
@@ -18,6 +20,7 @@ local function onPlayerAdded(player: Player)
     DataStore.LoadData(player, 1):andThen(function(data)
         print(data)
         PlotManager.LoadLayout(player, 0)
+        Remotes.Base.BaseLoaded:FireClient(player, plot)
     end)
 end
 
@@ -28,6 +31,7 @@ local function onPlayerRemoving(player: Player)
     PlotManager.WithdrawAll(player)
     print('releasing plot...')
     PlotManager.ReleasePlot(player)
+    DataStore.ReleaseData(player)
 end
 
 Players.PlayerAdded:Connect(onPlayerAdded)

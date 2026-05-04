@@ -5,7 +5,7 @@ local metadata = ReplicatedStorage.Shared.Metadata
 local inventory = {}
 
 local function checkItem(item: string)
-    return metadata:FindFirstChild(item) ~= nil
+    return metadata:FindFirstChild(item, true) ~= nil
 end
 
 function inventory.PlayerHasItem(player: Player, item: string)

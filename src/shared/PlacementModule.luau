@@ -24,12 +24,6 @@ Placement.__index = Placement
 Placement.CellSize = 1
 
 --[=[
-	@prop GridSize number
-	@within Placement
-]=]
-Placement.GridSize = 25 -- x and z pos halved
-
---[=[
 	Creates a new placement instance.
 
 	Each instance has its own:
@@ -39,10 +33,14 @@ Placement.GridSize = 25 -- x and z pos halved
 	@param plotOrigin Vector3
 	@return Placement
 ]=]
-function Placement.new(plotOrigin: Vector3)
+function Placement.new(plot: BasePart)
     local self = setmetatable({}, Placement)
 
-    self.PlotOrigin = plotOrigin
+    self.Plot = plot
+    self.GridSizeX = plot.Size.X / 2
+    self.GridSizeZ = plot.Size.Z / 2
+    self.PlotOrigin = plot.Position
+    self.PlotSize = plot.Size
     self.Occupied = {}
 
     return self
@@ -77,9 +75,10 @@ function Placement:WorldToGrid(worldPos: Vector3)
 end
 
 function Placement:IsWithinBounds(x, z, sizeX, sizeZ)
-    print(x, z, sizeX, sizeZ)
-
-    return (x >= 0 and z >= 0 and x + sizeX <= Placement.GridSize and z + sizeZ <= Placement.GridSize)
+    return (x - (sizeX / 2) >= -self.GridSizeX)
+        and (z - (sizeZ / 2) >= -self.GridSizeX)
+        and (x + (sizeX / 2) <= self.GridSizeX)
+        and (z + (sizeZ / 2) <= self.GridSizeZ)
 end
 
 --[=[
@@ -90,7 +89,7 @@ end
 	@return Vector3
 ]=]
 function Placement:GridToWorld(x: number, z: number)
-    return self.PlotOrigin + Vector3.new((x + 0.5) * self.CellSize, 0, (z + 0.5) * self.CellSize)
+    return self.PlotOrigin + Vector3.new(x * self.CellSize, 0, z * self.CellSize)
 end
 
 function Placement:_isOccupied(x, z)
@@ -118,9 +117,10 @@ end
 	@return boolean
 ]=]
 function Placement:CanPlace(x: number, z: number, sizeX: number, sizeZ: number)
-    -- if not self:IsWithinBounds(x, z, sizeX, sizeZ) then
-    --     return false
-    -- end
+    -- print(`within bounds: {self:IsWithinBounds(x, z, sizeX, sizeZ)}`)
+    if not self:IsWithinBounds(x, z, sizeX, sizeZ) then
+        return false
+    end
 
     for dx = 0, sizeX - 1 do
         for dz = 0, sizeZ - 1 do
@@ -180,6 +180,38 @@ function Placement:GetRotatedSize(sizeX: number, sizeZ: number, rotation: number
     return sizeX, sizeZ
 end
 
+function Placement:__clamp(vect: Vector3, size: Vector3): Vector3
+    local clampedX = math.clamp(vect.X, -self.GridSizeX + size.X / 2, self.GridSizeX - size.X / 2)
+    local clampedZ = math.clamp(vect.Z, -self.GridSizeZ + size.Z / 2, self.GridSizeZ - size.Z / 2)
+
+    return Vector3.new(clampedX, vect.Y, clampedZ)
+end
+
+--[=[
+	Clamps the object in place.
+
+	@param cf CFrame
+	@param size number
+	@return CFrame
+]=]
+function Placement:ClampToPlot(cf: CFrame, size: Vector3): CFrame
+    local plotCF = self.Plot:GetPivot() :: CFrame
+
+    -- convert to plot-local space
+    local localPos = plotCF:PointToObjectSpace(cf.Position)
+
+    -- clamp in LOCAL space
+    local clampedPos = self:__clamp(localPos, size)
+
+    local newLocal = Vector3.new(clampedPos.X, localPos.Y, clampedPos.Z)
+
+    -- convert back to world
+    local worldPos = plotCF:PointToWorldSpace(newLocal)
+
+    -- preserve rotation
+    return CFrame.new(worldPos) * (cf - cf.Position)
+end
+
 --[=[
 	Calculates placement data for preview or validation.
 
@@ -188,23 +220,32 @@ end
 	- Server (validation)
 
 	@param mouseHit CFrame
-	@param sizeX number
-	@param sizeZ number
+	@param size Vector3
 	@param rotation number?
 	@return table
 ]=]
-function Placement:GetPlacement(mouseHit: CFrame, sizeX: number, sizeZ: number, rotation: number?)
+function Placement:GetPlacement(position: Vector3, size: Vector3, rotation: number?)
     rotation = rotation or 0
 
-    local x, z = self:WorldToGrid(mouseHit.Position)
+    local sizeX = size.X
+    local sizeZ = size.Z
+
+    local x, z = self:WorldToGrid(position)
     local rSizeX, rSizeZ = self:GetRotatedSize(sizeX, sizeZ, rotation)
 
     local worldPos = self:GridToWorld(x, z)
     local cf = CFrame.new(worldPos) * CFrame.Angles(0, math.rad(rotation), 0)
 
-    local canPlace = self:CanPlace(x, z, rSizeX, rSizeZ)
+    -- account for plot's and hitbox's Y size
+    cf = cf + Vector3.new(0, (self.Plot.Size.Y / 2) + (size.Y / 2), 0)
 
-    return {
+    -- clamp the thing
+    cf = self:ClampToPlot(cf, size)
+
+    local clampedGrid = self:__clamp(Vector3.new(x, 0, z), size)
+    local canPlace = self:CanPlace(clampedGrid.X, clampedGrid.Z, rSizeX, rSizeZ)
+
+    local result = {
         X = x,
         Z = z,
         SizeX = rSizeX,
@@ -212,23 +253,8 @@ function Placement:GetPlacement(mouseHit: CFrame, sizeX: number, sizeZ: number, 
         CFrame = cf,
         CanPlace = canPlace,
     }
-end
 
---[=[
-	Attempts to place an object.
-
-	Should be called on the SERVER.
-
-	@param data table
-	@return boolean success
-]=]
-function Placement:Place(data)
-    if not data.CanPlace then
-        return false
-    end
-
-    self:Occupy(data.X, data.Z, data.SizeX, data.SizeZ)
-    return true
+    return result
 end
 
 --[=[
