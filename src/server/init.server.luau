@@ -2,6 +2,7 @@ local Players = game:GetService('Players')
 local ReplicatedStorage = game:GetService('ReplicatedStorage')
 local Remotes = require(ReplicatedStorage.Shared.Remotes)
 local DataStore = require(script.DataStore)
+local Leaderboard = require(script.Leaderboard)
 local PlotManager = require(script.PlotManager)
 
 local function onPlayerAdded(player: Player)
@@ -16,6 +17,9 @@ local function onPlayerAdded(player: Player)
 
     player.Team = team
     spawn.TeamColor = teamColor
+
+    -- create leaderboarad with empty blob
+    Leaderboard.CreateLeaderboard(player, 'Money', 'StringValue', '-')
 
     DataStore.LoadData(player, 1):andThen(function(data)
         print(data)

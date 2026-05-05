@@ -6,7 +6,9 @@ local PROFILE_TEMPLATE = require(script.Template)
 local Players = game:GetService('Players')
 local ReplicatedStorage = game:GetService('ReplicatedStorage')
 local RunService = game:GetService('RunService')
+local Leaderboard = require(script.Parent.Leaderboard)
 local Promise = require(ReplicatedStorage.Packages.Promise)
+local MoneyLib = require(ReplicatedStorage.Shared.MoneyLib)
 
 local PlayerStore = ProfileStore.New('TestStore', PROFILE_TEMPLATE)
 local Profiles: { [Player]: typeof(PlayerStore:StartSessionAsync()) } = {}
@@ -41,6 +43,13 @@ function DataManager.LoadData(player: Player, saveIndex: number)
             if player.Parent == Players then
                 Profiles[player] = profile
                 print(`Profile loaded for {player.DisplayName}!`)
+
+                Leaderboard.CreateLeaderboard(
+                    player,
+                    'Money',
+                    'StringValue',
+                    MoneyLib.DealWithPoints(profile.Data.Money)
+                )
                 resolve(profile)
             else
                 -- The player has left before the profile session started
@@ -62,6 +71,27 @@ end
 -- Data returned by this method is writable. Please use it wisely.
 function DataManager.GetData(player: Player)
     return Profiles[player].Data
+end
+
+function DataManager.GetMoney(player: Player)
+    local data = DataManager.GetData(player)
+    return data.Money
+end
+
+-- Very Dangerous
+function DataManager.UpdateMoney(player: Player, money: number)
+    local data = DataManager.GetData(player)
+    data.Money = money
+    Leaderboard.UpdateLeaderboard(player, 'Money', MoneyLib.HandleMoney(data.Money))
+end
+
+function DataManager.AddMoney(player: Player, amount: number)
+    local currentMoney = DataManager.GetMoney(player)
+    DataManager.UpdateMoney(player, currentMoney + amount)
+end
+
+function DataManager.SubtractMoney(player: Player, amount: number)
+    DataManager.AddMoney(player, -math.abs(amount))
 end
 
 function DataManager.ReleaseData(player: Player)
