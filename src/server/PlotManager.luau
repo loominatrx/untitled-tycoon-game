@@ -73,7 +73,7 @@ function plotManager.WithdrawObject(player: Player, object: Model)
 
     if object.Parent == objects then
         local position = object:GetPivot().Position
-        local hitboxSize = object.Hitbox.Size
+        local hitboxSize = (object.PrimaryPart :: BasePart).Size
 
         local x, z = Placement:WorldToGrid(position)
 
