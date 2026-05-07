@@ -3,7 +3,10 @@ local Players = game:GetService('Players')
 local ReplicatedStorage = game:GetService('ReplicatedStorage')
 local RunService = game:GetService('RunService')
 local UserInputService = game:GetService('UserInputService')
+
+local Fusion = require(ReplicatedStorage.Packages.Fusion)
 local Trove = require(ReplicatedStorage.Packages.Trove)
+local Interface = require(ReplicatedStorage.Shared.Interface)
 local PlacementModule = require(ReplicatedStorage.Shared.PlacementModule)
 local Remotes = require(ReplicatedStorage.Shared.Remotes)
 local Prefabs = ReplicatedStorage.Shared.Prefabs
@@ -93,6 +96,10 @@ local function init(self)
         ContextActionService:UnbindAction(ACTION_PLACE)
         ContextActionService:UnbindAction(ACTION_ROTATE)
     end)
+    self.Trove:Add(function()
+        self.GuiContainer:doCleanup()
+        self.PlacementGui = nil
+    end)
 
     ContextActionService:BindAction(ACTION_PLACE, CAS_ACTION, false, Enum.UserInputType.MouseButton1)
     ContextActionService:BindAction(ACTION_ROTATE, CAS_ACTION, false, Enum.KeyCode.R)
@@ -109,6 +116,8 @@ local function new(objectName: string)
     self.PreviewModel = previewModel:Clone()
     self.ModelRotation = 0
     self.Trove = Trove.new()
+    self.GuiContainer = Fusion:scoped()
+    self.PlacmenetGui = Interface.Elements.PlacementTip(self.GuiContainer, Interface.GuiContainer)
     self.MouseHit = nil
 
     init(self)
