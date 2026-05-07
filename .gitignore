@@ -14,3 +14,9 @@ wally.lock
 # rojo sourcemap
 # this should be automatically generated
 sourcemap.json
+
+# asphalt
+.asphalt-debug/*
+
+# env
+.env
