@@ -1,23 +1,26 @@
 local ReplicatedStorage = game:GetService('ReplicatedStorage')
+local UserInputService = game:GetService("UserInputService")
 -- local UserInputService = game:GetService('UserInputService')
 
 local Interface = require(script.Parent.Parent)
 local Fusion = require(ReplicatedStorage.Packages.Fusion)
 local Types = require(ReplicatedStorage.Shared.Types)
+local assets = require(ReplicatedStorage.Shared.assets)
 
 local Children = Fusion.Children
+local inputAsset = assets.Interface.Input
 
 local SourceSans = Interface.Font.new('rbxasset://fonts/families/SourceSansPro.json')
 
--- local function addToCleanup(scope: Types.FusionScope, object: Instance | RBXScriptConnection)
---     table.insert(scope, function()
---         if typeof(object) == 'Instance' then
---             object:Destroy()
---         elseif typeof(object) == 'RBXScriptConnection' then
---             object:Disconnect()
---         end
---     end)
--- end
+local function addToCleanup(scope: Types.FusionScope, object: Instance | RBXScriptConnection)
+    table.insert(scope, function()
+        if typeof(object) == 'Instance' then
+            object:Destroy()
+        elseif typeof(object) == 'RBXScriptConnection' then
+            object:Disconnect()
+        end
+    end)
+end
 
 local function createTip(
     scope: Types.FusionScope,
@@ -26,32 +29,32 @@ local function createTip(
         action: string,
     }
 )
-    -- local key = config.key
-    -- local isInputDown = scope:Value(false)
-    -- local inputType = if key:IsA('KeyCode')
-    --     then 'keyboard'
-    --     elseif key:IsA('UserInputType') and key == Enum.UserInputType.MouseButton1 then 'mouse_left'
-    --     elseif key:IsA('UserInputType') and key == Enum.UserInputType.MouseButton2 then 'mouse_right'
-    --     elseif key:IsA('UserInputType') and key == Enum.UserInputType.MouseButton3 then 'mouse_wheel'
-    --     -- elseif key:IsA('UserInputType') and key == Enum.UserInputType.Touch then
-    --     --     'touch'
-    --     else 'unknown'
+    local key = config.key
+    local isInputDown = scope:Value(false)
+    local inputType = if key:IsA('KeyCode')
+        then 'keyboard'
+        elseif key:IsA('UserInputType') and key == Enum.UserInputType.MouseButton1 then 'mouse_left'
+        elseif key:IsA('UserInputType') and key == Enum.UserInputType.MouseButton2 then 'mouse_right'
+        elseif key:IsA('UserInputType') and key == Enum.UserInputType.MouseButton3 then 'mouse_wheel'
+        -- elseif key:IsA('UserInputType') and key == Enum.UserInputType.Touch then
+        --     'touch'
+        else 'unknown'
 
-    -- local imageId = if inputType == 'keyboard'
-    --     then `{inputType}_{key.Name:lower()}`
-    --     elseif inputType:match('^mouse') ~= nil then inputType
-    --     else ''
+    local imageId = if inputType == 'keyboard'
+        then `{inputType}_{key.Name:lower()}`
+        elseif inputType:match('^mouse') ~= nil then inputType
+        else ''
 
-    -- local function onInput(input: InputObject)
-    --     local isDown = if input.UserInputState == Enum.UserInputState.Begin
-    --         then true
-    --         elseif input.UserInputState == Enum.UserInputState.End then false
-    --         else nil
+    local function onInput(input: InputObject)
+        local isDown = if input.UserInputState == Enum.UserInputState.Begin
+            then true
+            elseif input.UserInputState == Enum.UserInputState.End then false
+            else nil
 
-    --     if input.KeyCode == key or input.UserInputType == key then
-    --         isInputDown:set(isDown)
-    --     end
-    -- end
+        if input.KeyCode == key or input.UserInputType == key then
+            isInputDown:set(isDown)
+        end
+    end
 
     local tip = scope:New('Frame') {
         BackgroundTransparency = 1,
@@ -74,10 +77,10 @@ local function createTip(
             scope:New('ImageLabel') {
                 BackgroundTransparency = 1,
                 Size = UDim2.fromScale(1, 1),
-                -- Image = scope:Computed(function(use)
-                --     return (use(isInputDown) == true and inputAsset[`{imageId}_down`])
-                --         or (use(isInputDown) == false and inputAsset[`{imageId}_up`])
-                -- end),
+                Image = scope:Computed(function(use)
+                    return (use(isInputDown) == true and inputAsset[`{imageId}_down`])
+                        or (use(isInputDown) == false and inputAsset[`{imageId}_up`])
+                end),
 
                 [Children] = {
                     scope:New('UIAspectRatioConstraint') {
@@ -112,8 +115,8 @@ local function createTip(
         },
     }
 
-    -- addToCleanup(scope, UserInputService.InputBegan:Connect(onInput))
-    -- addToCleanup(scope, UserInputService.InputEnded:Connect(onInput))
+    addToCleanup(scope, UserInputService.InputBegan:Connect(onInput))
+    addToCleanup(scope, UserInputService.InputEnded:Connect(onInput))
 
     return tip
 end
