@@ -1,5 +1,5 @@
 # Generic information
-FriendlyName: Basic Conveyor
+FriendlyName: Basic Furnace
 Description: apa aja deh
 
 # Shop attributes
@@ -8,7 +8,7 @@ OnSale: true # whether it is sold on shop?
 CanBeSold: true # can this item be sold?
 
 # Stats
-ItemType: Upgraders
+ItemType: Furnaces
 ItemTier: Common
 
-ConveyorSpeed: 16
+OreMultiplier: 1
