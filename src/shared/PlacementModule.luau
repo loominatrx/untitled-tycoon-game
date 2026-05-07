@@ -234,7 +234,7 @@ function Placement:GetPlacement(position: Vector3, size: Vector3, rotation: numb
     local rSizeX, rSizeZ = self:GetRotatedSize(sizeX, sizeZ, rotation)
 
     local worldPos = self:GridToWorld(x, z)
-    local cf = CFrame.new(worldPos) * CFrame.Angles(0, math.rad(rotation), 0)
+    local cf = CFrame.new(worldPos) * CFrame.Angles(0, math.rad(rotation or 0), 0)
 
     -- account for plot's and hitbox's Y size
     cf = cf + Vector3.new(0, (self.Plot.Size.Y / 2) + (size.Y / 2), 0)
