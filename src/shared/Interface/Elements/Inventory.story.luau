@@ -7,7 +7,7 @@ local story = {
    story = function(props)
       local scope = props.scope
       local target = props.target
-      Interface.Elements.ItemPanel(scope).Parent =  target
+      Interface.Elements.ItemGrid(scope).Parent =  target
    end
 }
 

@@ -10,7 +10,7 @@ local ThemeSpec = require(ReplicatedStorage.Shared.Interface.Theme)
 
 local Children = Fusion.Children
 
-return function(scope: Types.FusionScope, context: 'Inventory' | 'Shop')
+return function(scope: Types.FusionScope, title: string)
     local onyx = Interface.PopulateOnyx(scope) :: Types.Fusionyx
     local container
     Themer.Theme:is(ThemeSpec):during(function()
@@ -64,15 +64,7 @@ return function(scope: Types.FusionScope, context: 'Inventory' | 'Shop')
                 },
             }
         }
-
-        task.defer(function()
-            local things = {'IronMine', 'BasicConveyor', 'BasicFurnace'}
-            for i = 0, 8 do
-                local thing = Interface.Elements.ItemGrid(scope, things[(i % 3) + 1], container.Card.Scroller.AbsoluteSize.Y)
-                thing.Parent = container.Card.Scroller
-            end
-        end)
     end)
 
-    return container
+    return container :: typeof(container)
 end

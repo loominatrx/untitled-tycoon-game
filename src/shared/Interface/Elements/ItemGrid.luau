@@ -4,6 +4,7 @@ local Interface = require(script.Parent.Parent)
 local Types = require(ReplicatedStorage.Shared.Types)
 local Fusion = require(ReplicatedStorage.Packages.Fusion)
 local OnyxUI = require(ReplicatedStorage.Packages.OnyxUI)
+local GameEnum = require(ReplicatedStorage.Shared.GameEnum)
 local Themer = OnyxUI.Themer
 
 local ThemeSpec = require(ReplicatedStorage.Shared.Interface.Theme)
@@ -13,7 +14,7 @@ local assets = require(ReplicatedStorage.Shared.assets)
 local Children = Fusion.Children
 local peek = Fusion.peek
 
-return function(scope: Types.FusionScope, name: Types.FusionUsedAs<string>, size: number)
+return function(scope: Types.FusionScope, name: Types.FusionUsedAs<string>, size: number, context: GameEnum.ItemPanelContext)
     local onyx = Interface.PopulateOnyx(scope) :: Types.Fusionyx
     local expanding = onyx:Value(false)
     
@@ -25,7 +26,10 @@ return function(scope: Types.FusionScope, name: Types.FusionUsedAs<string>, size
     local container
     Themer.Theme:is(ThemeSpec):during(function()
         local Theme = Themer.Theme:now()
+
+
         container = onyx:Frame {
+            Name = name,
             Size = onyx:Spring(onyx:Computed(function(use)
                 return UDim2.fromOffset(if use(expanding) == true then expandedSize else size, size)
             end), Theme.SpringSpeed.Base, Theme.SpringDampening['2']),
@@ -80,6 +84,10 @@ return function(scope: Types.FusionScope, name: Types.FusionUsedAs<string>, size
 
                                     Corner = {
                                         Radius = UDim.new(0, peek(Theme.CornerRadius['1']))
+                                    },
+
+                                    [Children] = {
+                                        
                                     }
                                 },
 
@@ -127,7 +135,7 @@ return function(scope: Types.FusionScope, name: Types.FusionUsedAs<string>, size
                                                     Style = 'Filled',
                                                     SizeVariant = 'ExtraLarge',
                                                     Color = Theme.Colors.Primary.Main,
-                                                    Content = { '<b>Place</b>' }
+                                                    Content = { '<b>Place</b>' },
                                                 },
 
                                                 onyx:Button {
