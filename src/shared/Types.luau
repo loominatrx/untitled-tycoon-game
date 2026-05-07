@@ -1,11 +1,15 @@
 local ReplicatedStorage = game:GetService('ReplicatedStorage')
 
+local Fusion = require(ReplicatedStorage.Packages.Fusion)
+local OnyxUI = require(ReplicatedStorage.Packages.OnyxUI)
 local FusionTypes = require(ReplicatedStorage.Packages._Index['elttob_fusion@0.3.0'].fusion.Types)
 
 export type FusionScope = FusionTypes.Scope<FusionTypes.Fusion>
 export type FusionProperties = FusionTypes.PropertyTable
+export type Fusionyx = typeof(Fusion.innerScope(Fusion.scoped(), Fusion, OnyxUI.Util, OnyxUI.Components))
 
 export type FusionValue = FusionTypes.Value<any>
+export type FusionUsedAs<T> = FusionTypes.UsedAs<T>
 
 export type Dictionary<K = any, V = any> = { [K]: V }
 export type Array<V = any> = Dictionary<number, V>

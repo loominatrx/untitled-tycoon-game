@@ -1,6 +1,11 @@
 local Players = game:GetService('Players')
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local StarterGui = game:GetService('StarterGui')
+
+local Fusion = require(ReplicatedStorage.Packages.Fusion)
+local OnyxUI = require(ReplicatedStorage.Packages.OnyxUI)
 local AttachLoaderFrom = require(script.Parent.LazyLoader)
+local Types = require(script.Parent.Types)
 local player = Players.LocalPlayer
 
 local Interface = {}
@@ -23,10 +28,11 @@ function Interface.init()
     container.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
     container.Parent = player:WaitForChild('PlayerGui')
 
-    local containerValue = script.ContainerObject
-    containerValue.Value = container
-
     Interface.GuiContainer = container
+end
+
+function Interface.PopulateOnyx(scope: Types.FusionScope)
+    return Fusion.innerScope(scope, Fusion, OnyxUI.Util, OnyxUI.Components) :: Types.Fusionyx
 end
 
 function Interface.SetCoreGuiEnabled(enabled: boolean)
