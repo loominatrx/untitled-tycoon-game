@@ -1,4 +1,4 @@
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local ReplicatedStorage = game:GetService('ReplicatedStorage')
 local Promise = require(ReplicatedStorage.Packages.Promise)
 local Metadata = require(ReplicatedStorage.Shared.Metadata)
 local Remotes = require(ReplicatedStorage.Shared.Remotes)
@@ -9,7 +9,7 @@ return {
             local RF = Remotes.Inventory.GetOwnedItems
             local success, result = pcall(RF.InvokeServer, RF)
             if success then
-            resolve(result)
+                resolve(result)
             else
                 reject(result)
             end
@@ -17,6 +17,6 @@ return {
     end,
 
     DoesItemExist = function(name: string)
-       return Metadata[name] ~= nil 
-    end
+        return Metadata[name] ~= nil
+    end,
 }

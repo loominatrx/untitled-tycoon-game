@@ -1,5 +1,5 @@
 local Players = game:GetService('Players')
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local ReplicatedStorage = game:GetService('ReplicatedStorage')
 local StarterGui = game:GetService('StarterGui')
 
 local Keybinds = require(script.Parent.Keybinds)
@@ -28,22 +28,22 @@ end
 
 -- Keybinds
 
-local MainKeybinds = Keybinds:CreateNewKeybindGroup({
+local MainKeybinds = Keybinds:CreateNewKeybindGroup {
     Name = 'MainKeybinds',
     Enabled = false,
-    IsGameProcessed = false
-})
+    IsGameProcessed = false,
+}
 
-MainKeybinds:AddKeybind({
+MainKeybinds:AddKeybind {
     Key = Enum.KeyCode.E,
     Callback = function(state: Enum.UserInputState)
         if state ~= Enum.UserInputState.Begin then
             return
         end
-        
+
         Interface.ToggleInventory()
-    end
-})
+    end,
+}
 
 -- Public methods
 

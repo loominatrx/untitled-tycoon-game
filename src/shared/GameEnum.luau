@@ -1,4 +1,4 @@
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local ReplicatedStorage = game:GetService('ReplicatedStorage')
 local EnumList = require(ReplicatedStorage.Packages.EnumList)
 
 type EnumList = typeof(EnumList.new(...))
@@ -6,7 +6,7 @@ type EnumList = typeof(EnumList.new(...))
 local Enums = {
     ItemPanelContext = EnumList.new('ItemPanelContext', {
         'Shop',
-        'Inventory'
+        'Inventory',
     }),
     ItemTier = EnumList.new('ItemTier', {
         'Common',

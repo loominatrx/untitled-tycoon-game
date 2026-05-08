@@ -1,6 +1,6 @@
-local CollectionService = game:GetService("CollectionService")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local RunService = game:GetService("RunService")
+local CollectionService = game:GetService('CollectionService')
+local ReplicatedStorage = game:GetService('ReplicatedStorage')
+local RunService = game:GetService('RunService')
 local Trove = require(ReplicatedStorage.Packages.Trove)
 local Types = require(ReplicatedStorage.Shared.Types)
 
@@ -11,19 +11,21 @@ function Dropper:SpawnOre()
     local dropper = self.Instance
     local owner = self.Owner
 
-    local oreTemplate = dropper:FindFirstChild("OreTemplate")
-    if not oreTemplate then return end
+    local oreTemplate = dropper:FindFirstChild('OreTemplate')
+    if not oreTemplate then
+        return
+    end
 
     local ore = oreTemplate:Clone()
     ore.CFrame = dropper.PrimaryPart.CFrame * CFrame.new(0, -2, 0)
 
     -- basic ore data
-    ore:SetAttribute("BaseValue", self.Metadata.OreValue)
-    ore:SetAttribute("Owner", owner)
+    ore:SetAttribute('BaseValue', self.Metadata.OreValue)
+    ore:SetAttribute('Owner', owner)
 
     ore.Parent = workspace.Ores
 
-    CollectionService:AddTag(ore, "Ore")
+    CollectionService:AddTag(ore, 'Ore')
 end
 
 function Dropper:Update(dt)
@@ -70,5 +72,5 @@ local function register(model: Model, metadata: Types.DropperMetadata)
 end
 
 return {
-    Register = register
+    Register = register,
 }

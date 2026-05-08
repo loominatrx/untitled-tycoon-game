@@ -4,7 +4,7 @@ SeededRNG.__index = SeededRNG
 function SeededRNG.new(seed)
     return setmetatable({
         rng = Random.new(seed),
-        calls = 0
+        calls = 0,
     }, SeededRNG)
 end
 

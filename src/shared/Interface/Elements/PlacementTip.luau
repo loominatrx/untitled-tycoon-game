@@ -1,5 +1,5 @@
 local ReplicatedStorage = game:GetService('ReplicatedStorage')
-local UserInputService = game:GetService("UserInputService")
+local UserInputService = game:GetService('UserInputService')
 -- local UserInputService = game:GetService('UserInputService')
 
 local Interface = require(script.Parent.Parent)
