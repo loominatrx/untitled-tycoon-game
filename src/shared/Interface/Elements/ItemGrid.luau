@@ -1,4 +1,4 @@
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local ReplicatedStorage = game:GetService('ReplicatedStorage')
 
 local Interface = require(script.Parent.Parent)
 local Types = require(ReplicatedStorage.Shared.Types)
@@ -14,32 +14,40 @@ local assets = require(ReplicatedStorage.Shared.assets)
 local Children = Fusion.Children
 local peek = Fusion.peek
 
-return function(scope: Types.FusionScope, name: Types.FusionUsedAs<string>, size: number, context: GameEnum.ItemPanelContext)
+return function(
+    scope: Types.FusionScope,
+    name: Types.FusionUsedAs<string>,
+    size: number,
+    context: GameEnum.ItemPanelContext
+)
     local onyx = Interface.PopulateOnyx(scope) :: Types.Fusionyx
     local expanding = onyx:Value(false)
-    
+
     name = OnyxUI.Util.EnsureValue(onyx, name)
-    
-    size = size - 4 or 200
+
+    size = if size ~= nil then size - 4 else 200
     local expandedSize = size * 3
-    
+
     local container
     Themer.Theme:is(ThemeSpec):during(function()
         local Theme = Themer.Theme:now()
 
-
         container = onyx:Frame {
             Name = name,
-            Size = onyx:Spring(onyx:Computed(function(use)
-                return UDim2.fromOffset(if use(expanding) == true then expandedSize else size, size)
-            end), Theme.SpringSpeed.Base, Theme.SpringDampening['2']),
+            Size = onyx:Spring(
+                onyx:Computed(function(use)
+                    return UDim2.fromOffset(if use(expanding) == true then expandedSize else size, size)
+                end),
+                Theme.SpringSpeed.Base,
+                Theme.SpringDampening['2']
+            ),
             AnchorPoint = Vector2.one * 0.5,
             Position = UDim2.fromScale(0.5, 0.5),
             AutomaticSize = Enum.AutomaticSize.None,
 
             Padding = {
                 Enabled = true,
-                All = UDim.new(0, Theme.Padding['1'])
+                All = UDim.new(0, peek(Theme.Padding['1'])),
             },
 
             [Children] = {
@@ -50,7 +58,7 @@ return function(scope: Types.FusionScope, name: Types.FusionUsedAs<string>, size
 
                     OnActivate = function()
                         expanding:set(not peek(expanding))
-                    end
+                    end,
                 },
                 onyx:Card {
                     ClipsDescendants = true,
@@ -79,29 +87,27 @@ return function(scope: Types.FusionScope, name: Types.FusionUsedAs<string>, size
                                     Parent = container,
 
                                     Aspect = {
-                                        Ratio = 1
+                                        Ratio = 1,
                                     },
 
                                     Corner = {
-                                        Radius = UDim.new(0, peek(Theme.CornerRadius['1']))
+                                        Radius = UDim.new(0, peek(Theme.CornerRadius['1'])),
                                     },
 
-                                    [Children] = {
-                                        
-                                    }
+                                    [Children] = {},
                                 },
 
                                 onyx:Frame {
                                     AutomaticSize = Enum.AutomaticSize.None,
                                     Size = UDim2.new(0, (expandedSize / 1.5) - 16, 1, 0),
                                     Visble = false,
-                                    
+
                                     List = {
                                         FillDirection = Enum.FillDirection.Vertical,
                                         VerticalAlignment = Enum.VerticalAlignment.Top,
                                         HorizontalAlignment = Enum.HorizontalAlignment.Left,
                                         SortOrder = Enum.SortOrder.LayoutOrder,
-                                        Padding = UDim.new(0, -6)
+                                        Padding = UDim.new(0, -6),
                                     },
 
                                     [Children] = {
@@ -116,8 +122,8 @@ return function(scope: Types.FusionScope, name: Types.FusionUsedAs<string>, size
                                                 return Metadata[use(name)].Description
                                             end),
                                             Flex = {
-                                                Mode = Enum.UIFlexMode.Fill
-                                            }
+                                                Mode = Enum.UIFlexMode.Fill,
+                                            },
                                         },
                                         onyx:Frame {
                                             AutomaticSize = Enum.AutomaticSize.None,
@@ -142,17 +148,17 @@ return function(scope: Types.FusionScope, name: Types.FusionUsedAs<string>, size
                                                     Style = 'Filled',
                                                     SizeVariant = 'ExtraLarge',
                                                     Color = Theme.Colors.Accent.Main,
-                                                    Content = { 'More info' }
+                                                    Content = { 'More info' },
                                                 },
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
+                                            },
+                                        },
+                                    },
+                                },
+                            },
+                        },
+                    },
+                },
+            },
         }
     end)
 
