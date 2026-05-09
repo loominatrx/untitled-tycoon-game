@@ -24,6 +24,11 @@ local Enums = {
         'RebornU',
         'Premium',
     }),
+    ItemType = EnumList.new('ItemType', {
+        'Droppers',
+        'Upgraders',
+        'Furnaces',
+    }),
 }
 
 export type ItemPanelContext = typeof(Enums.ItemPanelContext)

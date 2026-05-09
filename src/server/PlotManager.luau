@@ -2,9 +2,12 @@ local ReplicatedStorage = game:GetService('ReplicatedStorage')
 local PlotTemplate = game:GetService('ServerStorage').Prefabs.Plot
 local Shared = ReplicatedStorage.Shared
 local Prefabs = Shared.Prefabs
+local GameEnum = require(ReplicatedStorage.Shared.GameEnum)
+local Metadata = require(ReplicatedStorage.Shared.Metadata)
 local PlacementModule = require(ReplicatedStorage.Shared.PlacementModule)
 local Remotes = require(ReplicatedStorage.Shared.Remotes)
 local DataStore = require(script.Parent.DataStore)
+local Dropper = require(script.Parent.Gameplay.Dropper)
 
 local Inventory = require(script.Parent.Inventory)
 local Types = require(ReplicatedStorage.Shared.Types)
@@ -154,6 +157,8 @@ function plotManager.PlaceObject(player: Player, name: string, position: Vector3
     local plot = plotManager.GetPlot(player)
     local Placement = PlayerPlacementClass[player.UserId]
 
+    local objectMetadata = Metadata[name]
+
     if not object or not plot then
         return
     end
@@ -178,6 +183,10 @@ function plotManager.PlaceObject(player: Player, name: string, position: Vector3
     Remotes.Base.GridOccupied:FireClient(player, PlacementData.X, PlacementData.Z, hitboxSize.X, hitboxSize.Z)
     newObject:SetAttribute('Owner', player.UserId)
     newObject.Parent = plot.Objects
+
+    if objectMetadata.ItemType == GameEnum.ItemType.Droppers.Name then
+        Dropper.Register(newObject, objectMetadata)
+    end
     -- Inventory.removeItem(player, name)
 end
 
