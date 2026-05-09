@@ -28,20 +28,41 @@ end
 
 -- Keybinds
 
-local MainKeybinds = Keybinds:CreateNewKeybindGroup {
+Interface.MainKeybinds = Keybinds:CreateNewKeybindGroup {
     Name = 'MainKeybinds',
     Enabled = false,
     IsGameProcessed = false,
 }
 
-MainKeybinds:AddKeybind {
+Interface.MainKeybinds:AddKeybind {
+    Name = 'Toggle Inventory',
     Key = Enum.KeyCode.E,
     Callback = function(state: Enum.UserInputState)
         if state ~= Enum.UserInputState.Begin then
             return
         end
 
+        if Interface.IsInterfaceActive('Shop') then
+            Interface.ToggleShop()
+        end
+
         Interface.ToggleInventory()
+    end,
+}
+
+Interface.MainKeybinds:AddKeybind {
+    Name = 'Toggle Shop',
+    Key = Enum.KeyCode.R,
+    Callback = function(state: Enum.UserInputState)
+        if state ~= Enum.UserInputState.Begin then
+            return
+        end
+
+        if Interface.IsInterfaceActive('Inventory') then
+            Interface.ToggleInventory()
+        end
+
+        Interface.ToggleShop()
     end,
 }
 
@@ -71,6 +92,10 @@ function Interface.SetCoreGuiEnabled(enabled: boolean)
     SafeSetCoreGui(Enum.CoreGuiType.AvatarSwitcher, enabled)
 end
 
+function Interface.IsInterfaceActive(interfaceName: string)
+    return Interface.Scopes[interfaceName] ~= nil
+end
+
 function Interface.ToggleInventory()
     if Interface.Scopes.Inventory == nil then
         Interface.Scopes.Inventory = Interface.MainScope:innerScope()
@@ -78,6 +103,25 @@ function Interface.ToggleInventory()
     else
         Interface.Scopes.Inventory:doCleanup()
         Interface.Scopes.Inventory = nil
+    end
+end
+
+function Interface.ToggleShop()
+    if Interface.Scopes.Shop == nil then
+        Interface.Scopes.Shop = Interface.MainScope:innerScope()
+        Interface.Elements.Shop(Interface.Scopes.Shop).Parent = Interface.GuiContainer
+    else
+        Interface.Scopes.Shop:doCleanup()
+        Interface.Scopes.Shop = nil
+    end
+end
+
+function Interface.DisableInterfaces()
+    if Interface.IsInterfaceActive('Inventory') then
+        Interface.ToggleInventory()
+    end
+    if Interface.IsInterfaceActive('Shop') then
+        Interface.ToggleShop()
     end
 end
 
