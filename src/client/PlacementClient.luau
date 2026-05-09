@@ -16,6 +16,11 @@ local COLOR_ERR = Color3.fromRGB(255, 80, 80)
 
 local ACTION_PLACE = 'ACTION_PLACE'
 local ACTION_ROTATE = 'ACTION_ROTATE'
+local TERMINATE = 'TERMINATE'
+
+local WOBBLY = false
+
+local peek = Fusion.peek
 
 local Plot = Remotes.Base.BaseLoaded.OnClientEvent:Wait()
 local Placement = PlacementModule.new(Plot.Base)
@@ -51,7 +56,8 @@ function ClientPlacement:Update()
         local hitboxOutline = preview.boxOutline :: SelectionBox
 
         local placementData = Placement:GetPlacement(mouseHit.Position, hitboxSize, self.ModelRotation)
-        preview:PivotTo(placementData.CFrame)
+        self.PlacementCFrame:set(placementData.CFrame)
+        --
 
         hitboxOutline.Color3 = if placementData.CanPlace then COLOR_OK else COLOR_ERR
     end
@@ -59,6 +65,11 @@ end
 
 function ClientPlacement:Rotate()
     self.ModelRotation = (self.ModelRotation + 90) % 360
+end
+
+function ClientPlacement:Terminate()
+    self.Trove:Clean()
+    Interface.MainKeybinds:SetEnabled(true)
 end
 
 local function init(self)
@@ -86,23 +97,35 @@ local function init(self)
             Remotes.Base.PlaceObject:InvokeServer(self.ObjectName, self.MouseHit.Position, self.ModelRotation)
         elseif actionName == ACTION_ROTATE then
             self:Rotate()
+        elseif actionName == TERMINATE then
+            self:Terminate()
         end
     end
 
+    local animatedCFrame = self.GuiContainer:Spring(self.PlacementCFrame, 40, 0.8)
+    self:Update()
+
     self.Trove:Connect(RunService.RenderStepped, function()
         self:Update()
+        if WOBBLY then
+            preview:PivotTo(peek(animatedCFrame))
+        else
+            preview:PivotTo(peek(self.PlacementCFrame))
+        end
     end)
+
     self.Trove:Add(function()
         ContextActionService:UnbindAction(ACTION_PLACE)
         ContextActionService:UnbindAction(ACTION_ROTATE)
-    end)
-    self.Trove:Add(function()
-        self.GuiContainer:doCleanup()
-        self.PlacementGui = nil
+        ContextActionService:UnbindAction(TERMINATE)
     end)
 
     ContextActionService:BindAction(ACTION_PLACE, CAS_ACTION, false, Enum.UserInputType.MouseButton1)
     ContextActionService:BindAction(ACTION_ROTATE, CAS_ACTION, false, Enum.KeyCode.R)
+    ContextActionService:BindAction(TERMINATE, CAS_ACTION, false, Enum.KeyCode.Q)
+
+    Interface.DisableInterfaces()
+    Interface.MainKeybinds:SetEnabled(false)
 end
 
 local function new(objectName: string)
@@ -112,12 +135,14 @@ local function new(objectName: string)
     end
 
     local self = setmetatable({}, ClientPlacement)
-    self.ObjectName = objectName
-    self.PreviewModel = previewModel:Clone()
     self.ModelRotation = 0
+    self.ObjectName = objectName
+
     self.Trove = Trove.new()
-    self.GuiContainer = Fusion:scoped()
-    self.PlacmenetGui = Interface.Elements.PlacementTip(self.GuiContainer, Interface.GuiContainer)
+    self.PreviewModel = self.Trove:Add(previewModel:Clone())
+    self.GuiContainer = self.Trove:Add(Fusion:scoped(), 'doCleanup')
+    self.PlacmenetGui = self.Trove:Add(Interface.Elements.PlacementTip(self.GuiContainer, Interface.GuiContainer))
+    self.PlacementCFrame = self.GuiContainer:Value()
     self.MouseHit = nil
 
     init(self)
