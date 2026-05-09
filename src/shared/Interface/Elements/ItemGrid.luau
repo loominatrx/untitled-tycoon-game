@@ -1,5 +1,7 @@
+local Players = game:GetService('Players')
 local ReplicatedStorage = game:GetService('ReplicatedStorage')
 
+local PlacementClient = require(Players.LocalPlayer.PlayerScripts.Client.PlacementClient)
 local Interface = require(script.Parent.Parent)
 local Types = require(ReplicatedStorage.Shared.Types)
 local Fusion = require(ReplicatedStorage.Packages.Fusion)
@@ -8,6 +10,7 @@ local GameEnum = require(ReplicatedStorage.Shared.GameEnum)
 local Themer = OnyxUI.Themer
 
 local ThemeSpec = require(ReplicatedStorage.Shared.Interface.Theme)
+local ItemUtil = require(ReplicatedStorage.Shared.Interface.Utils.ItemUtil)
 local Metadata = require(ReplicatedStorage.Shared.Metadata)
 local assets = require(ReplicatedStorage.Shared.assets)
 
@@ -27,6 +30,34 @@ return function(
 
     size = if size ~= nil then size - 4 else 200
     local expandedSize = size * 3
+
+    local amountText
+    do
+        if context == GameEnum.ItemPanelContext.Inventory then
+            local amount = onyx:Value(0)
+            ItemUtil.GetInventoryItems():andThen(function(data)
+                amount:set(data[peek(name)])
+            end)
+            amountText = onyx:Text {
+                AutomaticSize = Enum.AutomaticSize.None,
+                Text = onyx:Computed(function(use)
+                    return if use(amount) > 1 then `x{use(amount)}` else ''
+                end),
+                Size = UDim2.fromScale(0.8, 0.2),
+                AnchorPoint = Vector2.new(0.5, 1),
+                Position = UDim2.fromScale(0.5, 0.9),
+                TextScaled = true,
+                TextXAlignment = Enum.TextXAlignment.Right,
+                TextYAlignment = Enum.TextYAlignment.Bottom,
+            }
+        end
+    end
+
+    local function MainButtonCallback()
+        if context == GameEnum.ItemPanelContext.Inventory then
+            PlacementClient.new(peek(name))
+        end
+    end
 
     local container
     Themer.Theme:is(ThemeSpec):during(function()
@@ -94,7 +125,9 @@ return function(
                                         Radius = UDim.new(0, peek(Theme.CornerRadius['1'])),
                                     },
 
-                                    [Children] = {},
+                                    [Children] = {
+                                        amountText,
+                                    },
                                 },
 
                                 onyx:Frame {
@@ -140,8 +173,21 @@ return function(
                                                 onyx:Button {
                                                     Style = 'Filled',
                                                     SizeVariant = 'ExtraLarge',
-                                                    Color = Theme.Colors.Primary.Main,
-                                                    Content = { '<b>Place</b>' },
+                                                    Color = if context == GameEnum.ItemPanelContext.Inventory
+                                                        then Theme.Colors.Primary.Main
+                                                        elseif
+                                                            context == GameEnum.ItemPanelContext.Shop
+                                                        then Theme.Colors.Success.Main
+                                                        else Theme.Colors.Neutral.Main,
+                                                    Content = {
+                                                        if context == GameEnum.ItemPanelContext.Inventory
+                                                            then '<b>Place</b>'
+                                                            elseif
+                                                                context == GameEnum.ItemPanelContext.Shop
+                                                            then '<b>Buy</b>'
+                                                            else '',
+                                                    },
+                                                    OnActivate = MainButtonCallback,
                                                 },
 
                                                 onyx:Button {
