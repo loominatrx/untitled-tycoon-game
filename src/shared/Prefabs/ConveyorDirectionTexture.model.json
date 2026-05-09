@@ -1,0 +1,16 @@
+{
+    "ClassName": "Texture",
+    "Properties": {
+        "Color3": [
+            0.666666,
+            1,
+            1
+        ],
+        "Face": "Top",
+        "MetalnessMap": "rbxassetid://16848361091",
+        "NormalMap": "rbxassetid://16848361091",
+        "StudsPerTileU": 4,
+        "StudsPerTileV": 4,
+        "Texture": "rbxassetid://16848361091"
+    }
+}
