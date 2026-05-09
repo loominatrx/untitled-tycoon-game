@@ -11,6 +11,6 @@ CanBeSold: true # can this item be sold?
 ItemType: Droppers
 ItemTier: Common
 
-DropRate: 1
+DropRate: 5
 OreValue: 1
 OreSize: 1
