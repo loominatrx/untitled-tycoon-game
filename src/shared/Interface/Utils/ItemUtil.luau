@@ -1,5 +1,6 @@
 local ReplicatedStorage = game:GetService('ReplicatedStorage')
 local Promise = require(ReplicatedStorage.Packages.Promise)
+local TableUtil = require(ReplicatedStorage.Packages.TableUtil)
 local Metadata = require(ReplicatedStorage.Shared.Metadata)
 local Remotes = require(ReplicatedStorage.Shared.Remotes)
 
@@ -13,6 +14,16 @@ return {
             else
                 reject(result)
             end
+        end)
+    end,
+
+    GetBuyableItems = function()
+        local filtered = TableUtil.Filter(Metadata, function(v)
+            return v.OnSale and v.Price > 0
+        end)
+
+        return TableUtil.Map(filtered, function(_, k)
+            return k
         end)
     end,
 
