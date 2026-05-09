@@ -40,7 +40,21 @@ export type DropperStats = {
     OreSize: number,
 }
 
+export type UpgraderTagData = {
+    Operation: 'Add' | 'Multiply',
+    Value: number,
+}
+
+export type UpgraderTags = { [string]: UpgraderTagData }
+
+export type UpgraderStats = {
+    ConveyorSpeed: number,
+    MaxUpgradeCount: number,
+    Upgrades: UpgraderTags,
+}
+
 export type DropperMetadata = ItemMetadata & DropperStats
+export type UpgraderMetadata = ItemMetadata & UpgraderStats
 
 --> inventory items
 export type InventoryItems = Dictionary<string, number>
