@@ -13,11 +13,12 @@ function Dropper:SpawnOre()
 
     local oreTemplate = dropper:FindFirstChild('OreTemplate')
     if not oreTemplate then
-        return
+        -- fallback to default ore
+        oreTemplate = ReplicatedStorage.Shared.Prefabs.GenericOre
     end
 
     local ore = oreTemplate:Clone()
-    ore.CFrame = dropper.PrimaryPart.CFrame * CFrame.new(0, -2, 0)
+    ore:PivotTo(dropper.Drop:GetPivot() - Vector3.new(0, 1, 0))
 
     -- basic ore data
     ore:SetAttribute('BaseValue', self.Metadata.OreValue)
@@ -32,6 +33,7 @@ function Dropper:Update(dt)
     local rate = self.Metadata.DropRate
 
     self.Cooldown -= dt
+    print(`Dropper updating cd: {tostring(self.Cooldown)}`)
 
     if self.Cooldown <= 0 then
         self.Cooldown = rate
@@ -56,11 +58,13 @@ local function init(self)
 
     -- attach to the the instance
     self.Trove:AttachToInstance(self.Instance)
+    print(`Dropper system initted for {tostring(self.Owner)}'s {self.Instance.Name}`)
+    print(self)
 end
 
 -- careful for giving the model wrong metadata to use, as it can cause confusion among players. use with caution.
 local function register(model: Model, metadata: Types.DropperMetadata)
-    local self = {}
+    local self = setmetatable({}, Dropper)
     self.Instance = model
     self.Owner = model:GetAttribute('Owner') :: number
     self.Metadata = metadata
@@ -68,7 +72,8 @@ local function register(model: Model, metadata: Types.DropperMetadata)
 
     self.Trove = Trove.new()
 
-    return init(setmetatable(self, Dropper))
+    init(self)
+    return self
 end
 
 return {
