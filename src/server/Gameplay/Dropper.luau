@@ -33,7 +33,6 @@ function Dropper:Update(dt)
     local rate = self.Metadata.DropRate
 
     self.Cooldown -= dt
-    print(`Dropper updating cd: {tostring(self.Cooldown)}`)
 
     if self.Cooldown <= 0 then
         self.Cooldown = rate
