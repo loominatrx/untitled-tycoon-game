@@ -76,6 +76,7 @@ MoneyLib.Suffixes = {
 }
 --                                                  																																															^NEW     ^ 10e123
 MoneyLib.CachedShorts = {}
+MoneyLib.RebirthBasePrice = 2.5 * (10 ^ 18)
 
 -- 2/3 was TOO HIGH
 
@@ -108,7 +109,7 @@ MoneyLib.RebornPrice = function(RB)
 
     local Expo = 1 + low + high
     local Multi = ((math.floor(RB / 5) * 2) + 1) * (1 + (math.floor(RB / 25) * 100)) * (1 + math.floor(RB / 500) * 1000)
-    local Price = (25000000000000000000 * Multi) ^ Expo
+    local Price = (MoneyLib.RebirthBasePrice * Multi) ^ Expo
     if Price > 2.5 * 10 ^ 181 then
         Price = 2.5 * 10 ^ 181
     end
