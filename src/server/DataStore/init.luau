@@ -5,7 +5,6 @@ local PROFILE_TEMPLATE = require(script.Template)
 
 local Players = game:GetService('Players')
 local ReplicatedStorage = game:GetService('ReplicatedStorage')
-local RunService = game:GetService('RunService')
 local Leaderboard = require(script.Parent.Leaderboard)
 local Promise = require(ReplicatedStorage.Packages.Promise)
 local MoneyLib = require(ReplicatedStorage.Shared.MoneyLib)
@@ -44,12 +43,7 @@ function DataManager.LoadData(player: Player, saveIndex: number)
                 Profiles[player] = profile
                 print(`Profile loaded for {player.DisplayName}!`)
 
-                Leaderboard.CreateLeaderboard(
-                    player,
-                    'Money',
-                    'StringValue',
-                    MoneyLib.DealWithPoints(profile.Data.Money)
-                )
+                Leaderboard.CreateLeaderboard(player, 'Money', 'StringValue', MoneyLib.HandleMoney(profile.Data.Money))
                 resolve(profile)
             else
                 -- The player has left before the profile session started
