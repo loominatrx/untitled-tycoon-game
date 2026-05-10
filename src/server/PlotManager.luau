@@ -1,7 +1,10 @@
 local ReplicatedStorage = game:GetService('ReplicatedStorage')
+local ServerScriptService = game:GetService('ServerScriptService')
 local PlotTemplate = game:GetService('ServerStorage').Prefabs.Plot
 local Shared = ReplicatedStorage.Shared
 local Prefabs = Shared.Prefabs
+local Furnace = require(ServerScriptService.Server.Gameplay.Furnace)
+local Upgrader = require(ServerScriptService.Server.Gameplay.Upgrader)
 local GameEnum = require(ReplicatedStorage.Shared.GameEnum)
 local Metadata = require(ReplicatedStorage.Shared.Metadata)
 local PlacementModule = require(ReplicatedStorage.Shared.PlacementModule)
@@ -59,6 +62,22 @@ function plotManager.SpawnPlot(player: Player): Model?
     plot:PivotTo(assignedPlot.CFrame)
     plot.Parent = workspace.Plots
     plots[player.UserId] = plot
+
+    local onInstanceAdd = plot.Objects.ChildAdded:Connect(function(object)
+        local objectMetadata = Metadata[object.Name]
+        if objectMetadata.ItemType == GameEnum.ItemType.Droppers.Name then
+            Dropper.Register(object)
+        elseif objectMetadata.ItemType == GameEnum.ItemType.Upgraders.Name then
+            Upgrader.Register(object)
+        elseif objectMetadata.ItemType == GameEnum.ItemType.Furnaces.Name then
+            Furnace.Register(object)
+        end
+    end)
+
+    plot.Destroying:Connect(function()
+        onInstanceAdd:Disconnect()
+        onInstanceAdd = nil
+    end)
 
     PlayerPlacementClass[player.UserId] = PlacementModule.new(plot.Base)
 
@@ -157,8 +176,6 @@ function plotManager.PlaceObject(player: Player, name: string, position: Vector3
     local plot = plotManager.GetPlot(player)
     local Placement = PlayerPlacementClass[player.UserId]
 
-    local objectMetadata = Metadata[name]
-
     if not object or not plot then
         return
     end
@@ -183,10 +200,6 @@ function plotManager.PlaceObject(player: Player, name: string, position: Vector3
     Remotes.Base.GridOccupied:FireClient(player, PlacementData.X, PlacementData.Z, hitboxSize.X, hitboxSize.Z)
     newObject:SetAttribute('Owner', player.UserId)
     newObject.Parent = plot.Objects
-
-    if objectMetadata.ItemType == GameEnum.ItemType.Droppers.Name then
-        Dropper.Register(newObject, objectMetadata)
-    end
     -- Inventory.removeItem(player, name)
 end
 
