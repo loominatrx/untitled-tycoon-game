@@ -49,8 +49,14 @@ export type UpgraderTags = { [string]: UpgraderTagData }
 
 export type UpgraderStats = {
     ConveyorSpeed: number,
-    MaxUpgradeCount: number,
-    Upgrades: UpgraderTags,
+    Upgrades: UpgraderTags?,
+    MaxUpgradeCount: number?,
+    ResetAllUpgraderCount: boolean?,
+}
+
+export type FurnaceStats = {
+    OreMultiplier: number?,
+    IsCellFurnace: boolean?,
 }
 
 export type DropperMetadata = ItemMetadata & DropperStats

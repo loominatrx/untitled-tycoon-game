@@ -8,6 +8,7 @@ local Enums = {
         'Shop',
         'Inventory',
     }),
+
     ItemTier = EnumList.new('ItemTier', {
         'Common',
         'Uncommon',
@@ -24,14 +25,22 @@ local Enums = {
         'RebornU',
         'Premium',
     }),
+
     ItemType = EnumList.new('ItemType', {
         'Droppers',
         'Upgraders',
         'Furnaces',
     }),
+
+    UpgradeOperation = EnumList.new('UpgradeOperation', {
+        'Add',
+        'Multiply',
+    }),
 }
 
 export type ItemPanelContext = typeof(Enums.ItemPanelContext)
 export type ItemTier = typeof(Enums.ItemTier)
+export type ItemType = typeof(Enums.ItemType)
+export type UpgradeOperation = typeof(Enums.UpgradeOperation)
 
 return Enums

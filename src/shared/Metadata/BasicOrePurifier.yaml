@@ -1,5 +1,5 @@
 # Generic information
-FriendlyName: Iron Mine
+FriendlyName: Basic Ore Purifier
 Description: apa aja deh
 
 # Shop attributes
@@ -8,9 +8,15 @@ OnSale: true # whether it is sold on shop?
 CanBeSold: true # can this item be sold?
 
 # Stats
-ItemType: Droppers
+ItemType: Upgraders
 ItemTier: Common
 
-DropRate: 5
-OreValue: 200
-OreSize: 1
+ConveyorSpeed: 16
+MaxUpgradeCount: 5
+Upgrades:
+  PurifierAddition:
+    Operation: Add
+    Value: 1000
+  PurifierMultiplication:
+    Operation: Multiply
+    Value: 1.5

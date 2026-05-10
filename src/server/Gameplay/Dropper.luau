@@ -1,32 +1,15 @@
-local CollectionService = game:GetService('CollectionService')
 local ReplicatedStorage = game:GetService('ReplicatedStorage')
 local RunService = game:GetService('RunService')
+
+local Ore = require(script.Parent.Ore)
 local Trove = require(ReplicatedStorage.Packages.Trove)
-local Types = require(ReplicatedStorage.Shared.Types)
+local Metadata = require(ReplicatedStorage.Shared.Metadata)
 
 local Dropper = {}
 Dropper.__index = Dropper
 
 function Dropper:SpawnOre()
-    local dropper = self.Instance
-    local owner = self.Owner
-
-    local oreTemplate = dropper:FindFirstChild('OreTemplate')
-    if not oreTemplate then
-        -- fallback to default ore
-        oreTemplate = ReplicatedStorage.Shared.Prefabs.GenericOre
-    end
-
-    local ore = oreTemplate:Clone()
-    ore:PivotTo(dropper.Drop:GetPivot() - Vector3.new(0, 1, 0))
-
-    -- basic ore data
-    ore:SetAttribute('BaseValue', self.Metadata.OreValue)
-    ore:SetAttribute('Owner', owner)
-
-    ore.Parent = workspace.Ores
-
-    CollectionService:AddTag(ore, 'Ore')
+    Ore.new(self.Instance)
 end
 
 function Dropper:Update(dt)
@@ -62,8 +45,10 @@ local function init(self)
 end
 
 -- careful for giving the model wrong metadata to use, as it can cause confusion among players. use with caution.
-local function register(model: Model, metadata: Types.DropperMetadata)
+local function register(model: Model)
     local self = setmetatable({}, Dropper)
+    local metadata = Metadata[model.Name]
+
     self.Instance = model
     self.Owner = model:GetAttribute('Owner') :: number
     self.Metadata = metadata
