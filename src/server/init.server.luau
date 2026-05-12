@@ -10,7 +10,7 @@ local function onPlayerAdded(player: Player)
     local teamColor = BrickColor.random()
 
     local team = Instance.new('Team')
-    team.Name = `{player.Name}'s Warnet`
+    team.Name = `{player.Name}'s Tycoon`
     team.Parent = game:GetService('Teams')
     team.TeamColor = teamColor
 
