@@ -46,15 +46,16 @@ end
 
 -- careful for giving the model wrong metadata to use, as it can cause confusion among players. use with caution.
 local function register(model: Model)
-    local self = setmetatable({}, Dropper)
     local metadata = Metadata[model.Name]
 
-    self.Instance = model
-    self.Owner = model:GetAttribute('Owner') :: number
-    self.Metadata = metadata
-    self.Cooldown = metadata.DropRate
+    local self = setmetatable({
+        Instance = model,
+        Owner = model:GetAttribute('Owner') :: number,
+        Metadata = metadata,
+        Cooldown = metadata.DropRate,
 
-    self.Trove = Trove.new()
+        Trove = Trove.new(),
+    }, Dropper)
 
     init(self)
     return self
