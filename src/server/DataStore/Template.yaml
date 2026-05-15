@@ -1,10 +1,44 @@
 # data template
 
-# basic stats
+####################################################################################
+
+# A in-game currency that can be used to buy things in Shop.
 Money: 1000
-Life: 1
-Rebirths: 0
+
+# A currency in the game that allows players to unlock and use items during gameplay.
 ResearchPoints: 0
+
+# Represents a single run of the player’s base.
+Life: 1
+
+# Core mechanic that resets your base, cash, and progress in exchange
+# for cool perks that players can utilize in the next Life.
+Rebirths: 0
+
+####################################################################################
+
+# Seed settings
+Seed: TUTORIAL
+
+# set to false if the seed is gibberish 
+IsSetSeed: false
+
+# Random counters
+PerkRandomCount: 0
+
+####################################################################################
+
+# Perks
+# [string PerkName, number Stars]
+ActivePerks: []
+
+# Listed perks
+# The list is saved when player is about to choose their perks,
+# Otherwise, discard the listed perks to indicate player has done picking the perks.
+
+ListedPerks: []
+
+####################################################################################
 
 # layout
 SavedLayouts:
@@ -15,6 +49,8 @@ SavedLayouts:
   '4': []
   '5': []
 
+####################################################################################
+
 Inventory:
   IronMine: 1
   BasicConveyor: 10
@@ -22,7 +58,11 @@ Inventory:
   CellFurnace: 1
   SpawnBeacon: 1
 
+####################################################################################
+
 Options:
   OreLimit: 20
   PlacementSmoothing: true
   DebugMode: false
+
+####################################################################################
