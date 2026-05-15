@@ -46,7 +46,23 @@ local Enums = {
 
         'OnObjectAdded',
         'OnObjectDestroyed',
-    })
+    }),
+
+    PerkBuffs = EnumList.new('PerkBuffs', {
+        'OreWealth',
+        'HiSpeedConveyor',
+        'SpeedyRate',
+        'CostReduction',
+        'UPGrade',
+    }),
+
+    PerkDebuffs = EnumList.new('PerkDebuffs', {
+        'DropperJam',
+        'OreInflation',
+        'SluggishConveyor',
+        'CostInflation',
+        'Degradation',
+    }),
 }
 
 export type ItemPanelContext = typeof(Enums.ItemPanelContext)
