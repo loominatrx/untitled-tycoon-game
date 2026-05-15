@@ -5,6 +5,7 @@ local ServerScriptService = game:GetService('ServerScriptService')
 local DataStore = require(ServerScriptService.Server.DataStore)
 local GameEnum = require(ReplicatedStorage.Shared.GameEnum)
 local Modifier = require(script.Parent.Modifier)
+local Perks = require(script.Parent.Perks)
 local Metadata = require(ReplicatedStorage.Shared.Metadata)
 
 local Ore = {}
@@ -98,6 +99,9 @@ local function init(self)
     local dropper = self.Source
     local ore = self.OrePart
 
+    local PlayerPerk = Perks.GetPlayerPerk(self.Owner)
+    PlayerPerk:RunHook(GameEnum.PerkHooks.OnOreSpawn, self)
+
     ore:PivotTo(dropper.Drop:GetPivot() - Vector3.new(0, 1, 0))
     ore:SetAttribute('Owner', self.OwnerId)
 
@@ -125,7 +129,7 @@ local function new(source: Instance)
     if hasHitOreLimit(player) then
         return
     end
-    
+
     local oreTemplate = source:FindFirstChild('OreTemplate')
     if not oreTemplate then
         -- fallback to default ore
