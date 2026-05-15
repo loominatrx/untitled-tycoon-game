@@ -36,6 +36,17 @@ local Enums = {
         'Add',
         'Multiply',
     }),
+
+    PerkHooks = EnumList.new('PerkHooks', {
+        'OnOreSpawn',
+        'OnOreUpgrade',
+        'BeforeOreProcessed',
+        'OnOreProcess',
+        'AfterOreProcessed',
+
+        'OnObjectAdded',
+        'OnObjectDestroyed',
+    })
 }
 
 export type ItemPanelContext = typeof(Enums.ItemPanelContext)
