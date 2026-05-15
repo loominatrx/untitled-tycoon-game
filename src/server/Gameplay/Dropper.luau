@@ -9,7 +9,7 @@ local Dropper = {}
 Dropper.__index = Dropper
 
 function Dropper:SpawnOre()
-    Ore.new(self.Instance)
+    Ore.new(self.Source)
 end
 
 function Dropper:Update(dt)
@@ -31,7 +31,7 @@ local function init(self)
     -- auto-cleanup when the dropper destroyed
     self.Trove:Add(function()
         task.defer(function()
-            self.Instance = nil
+            self.Source = nil
             self.Owner = nil
             self.Metadata = nil
             self.Cooldown = nil
@@ -39,8 +39,8 @@ local function init(self)
     end)
 
     -- attach to the the instance
-    self.Trove:AttachToInstance(self.Instance)
-    print(`Dropper system initted for {tostring(self.Owner)}'s {self.Instance.Name}`)
+    self.Trove:AttachToInstance(self.Source)
+    print(`Dropper system initted for {tostring(self.Owner)}'s {self.Source.Name}`)
     print(self)
 end
 
@@ -49,7 +49,7 @@ local function register(model: Model)
     local metadata = Metadata[model.Name]
 
     local self = setmetatable({
-        Instance = model,
+        Source = model,
         Owner = model:GetAttribute('Owner') :: number,
         Metadata = metadata,
         Cooldown = metadata.DropRate,
