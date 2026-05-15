@@ -12,6 +12,22 @@ Ore.__index = Ore
 
 local OreData = {}
 
+local function hasHitOreLimit(player: Player)
+    local counter = 0
+    local maxLimit = DataStore.GetData(player).Options.OreLimit
+    for _, data in OreData do
+        if data.Owner == player then
+            counter += 1
+        end
+    end
+
+    if counter > maxLimit then
+        return true
+    end
+
+    return false
+end
+
 function Ore:Upgrade(id: string, operator: GameEnum.UpgradeOperation, value: number)
     if operator == GameEnum.UpgradeOperation.Add then
         self.Value:Add(id, value)
@@ -92,7 +108,6 @@ local function init(self)
     local hasTouchedBase = false
     local touchedConnection
     touchedConnection = ore.Touched:Connect(function(otherPart)
-        print(otherPart)
         if otherPart.Name == 'Base' and not hasTouchedBase then
             hasTouchedBase = true
             task.wait(2)
@@ -104,6 +119,13 @@ local function init(self)
 end
 
 local function new(source: Instance)
+    local ownerId = source:GetAttribute('Owner')
+    local player = Players:GetPlayerByUserId(ownerId)
+
+    if hasHitOreLimit(player) then
+        return
+    end
+    
     local oreTemplate = source:FindFirstChild('OreTemplate')
     if not oreTemplate then
         -- fallback to default ore
@@ -111,7 +133,6 @@ local function new(source: Instance)
     end
 
     local ore = oreTemplate:Clone()
-    local ownerId = source:GetAttribute('Owner')
     local metadata = Metadata[source.Name]
 
     local self = setmetatable({
@@ -119,7 +140,7 @@ local function new(source: Instance)
         OrePart = ore,
         UpgradeCount = {},
         OwnerId = ownerId,
-        Owner = Players:GetPlayerByUserId(ownerId),
+        Owner = player,
         Value = Modifier.new(metadata.OreValue),
     }, Ore)
 
