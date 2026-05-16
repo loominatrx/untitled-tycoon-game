@@ -1,3 +1,4 @@
+local CollectionService = game:GetService('CollectionService')
 local ReplicatedStorage = game:GetService('ReplicatedStorage')
 local ServerScriptService = game:GetService('ServerScriptService')
 local PlotTemplate = game:GetService('ServerStorage').Prefabs.Plot
@@ -185,9 +186,10 @@ function plotManager.PlaceObject(player: Player, name: string, position: Vector3
     -- end
 
     local newObject = object:Clone()
-    local hitboxSize = newObject.Hitbox.Size
-    local PlacementData = Placement:GetPlacement(position, hitboxSize, rotation)
+    local hitbox = newObject.Hitbox
+    local hitboxSize = hitbox.Size
 
+    local PlacementData = Placement:GetPlacement(position, hitboxSize, rotation)
     if not PlacementData.CanPlace then
         return
     end
@@ -198,8 +200,11 @@ function plotManager.PlaceObject(player: Player, name: string, position: Vector3
 
     Placement:Occupy(PlacementData.X, PlacementData.Z, hitboxSize.X, hitboxSize.Z)
     Remotes.Base.GridOccupied:FireClient(player, PlacementData.X, PlacementData.Z, hitboxSize.X, hitboxSize.Z)
+
     newObject:SetAttribute('Owner', player.UserId)
     newObject.Parent = plot.Objects
+    CollectionService:AddTag(hitbox, 'ObjectHitboxes')
+
     -- Inventory.removeItem(player, name)
 end
 
