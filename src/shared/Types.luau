@@ -59,6 +59,10 @@ export type FurnaceStats = {
     IsCellFurnace: boolean?,
 }
 
+export type SavedPerk = { Name: string, Buffs: Array<number>, Debuffs: Array<number> }
+
+export type SavedPerks = { SavedPerk }
+
 export type DropperMetadata = ItemMetadata & DropperStats
 export type UpgraderMetadata = ItemMetadata & UpgraderStats
 

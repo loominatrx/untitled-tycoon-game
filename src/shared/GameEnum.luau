@@ -69,5 +69,8 @@ export type ItemPanelContext = typeof(Enums.ItemPanelContext)
 export type ItemTier = typeof(Enums.ItemTier)
 export type ItemType = typeof(Enums.ItemType)
 export type UpgradeOperation = typeof(Enums.UpgradeOperation)
+export type PerkHooks = typeof(Enums.PerkHooks)
+export type PerkBuffs = typeof(Enums.PerkBuffs)
+export type PerkDebuffs = typeof(Enums.PerkDebuffs)
 
 return Enums
