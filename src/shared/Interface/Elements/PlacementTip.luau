@@ -126,8 +126,8 @@ return function(scope: Types.FusionScope, parent: Instance?)
         BackgroundTransparency = 0.5,
         BackgroundColor3 = Color3.new(),
 
-        AnchorPoint = Vector2.new(0, 1),
-        Position = UDim2.new(0.025, 24, 0.975, -24),
+        AnchorPoint = Vector2.one,
+        Position = UDim2.new(0.975, -24, 0.975, -24),
         Size = UDim2.new(0.1, 120, 0.1, 105),
 
         Parent = parent,
