@@ -18,7 +18,7 @@ local ACTION_PLACE = 'ACTION_PLACE'
 local ACTION_ROTATE = 'ACTION_ROTATE'
 local TERMINATE = 'TERMINATE'
 
-local WOBBLY = false
+local WOBBLY = true
 
 local peek = Fusion.peek
 
@@ -47,6 +47,57 @@ local function castMouse(): RaycastResult?
     return workspace:Raycast(ray.Origin, ray.Direction * 1000, params)
 end
 
+local function showAllHitboxes(self)
+    local function childAdded(model)
+        if model:IsA('Model') then
+            local boxOutline = Prefabs.boxOutline:Clone() :: SelectionBox
+            boxOutline.Adornee = model:WaitForChild('Hitbox')
+            boxOutline.Parent = model
+        end
+    end
+    for _, model in Plot.Objects:GetChildren() do
+        childAdded(model)
+    end
+    self.Trove:Connect(Plot.Objects.ChildAdded, childAdded)
+end
+
+local function hideAllHitboxes()
+    for _, model in Plot.Objects:GetChildren() do
+        if model:IsA('Model') then
+            local boxOutline = model:FindFirstChild('boxOutline') :: SelectionBox?
+            if not boxOutline then
+                continue
+            end
+            boxOutline:Destroy()
+        end
+    end
+end
+
+local function showConveyorDirection(self)
+    local textures = {}
+    local offset = 0
+
+    local function childAdded(conveyorPart)
+        if conveyorPart:IsA('BasePart') and conveyorPart.Name == 'Conveyor' then
+            local ConveyorDirectionTex = self.Trove:Add(Prefabs.ConveyorDirectionTexture:Clone())
+            ConveyorDirectionTex.Parent = conveyorPart
+            table.insert(textures, ConveyorDirectionTex)
+        end
+    end
+
+    for _, conveyorPart in Plot.Objects:GetDescendants() do
+        childAdded(conveyorPart)
+    end
+    self.Trove:Connect(Plot.Objects.DescendantAdded, childAdded)
+
+    self.Trove:Connect(RunService.RenderStepped, function(dt)
+        offset -= dt * 2
+        for _, texture in textures do
+            texture.OffsetStudsV = offset
+        end
+    end)
+end
+
 function ClientPlacement:Update()
     local mouseHit = castMouse()
     self.MouseHit = mouseHit
@@ -57,7 +108,6 @@ function ClientPlacement:Update()
 
         local placementData = Placement:GetPlacement(mouseHit.Position, hitboxSize, self.ModelRotation)
         self.PlacementCFrame:set(placementData.CFrame)
-        --
 
         hitboxOutline.Color3 = if placementData.CanPlace then COLOR_OK else COLOR_ERR
     end
@@ -82,11 +132,11 @@ local function init(self)
         if part:IsA('BasePart') then
             part.CanCollide = false
             part.CanQuery = false
-            part.LocalTransparencyModifier = if part.Name ~= 'Hitbox' then 0.5 else 1
+            part.LocalTransparencyModifier = if part.Name ~= 'Hitbox' then 0.5 else 0.4
         end
     end
 
-    preview.Parent = workspace
+    preview.Parent = Plot.Objects
 
     local function CAS_ACTION(actionName: string, inputState: Enum.UserInputState)
         if inputState ~= Enum.UserInputState.Begin then
@@ -102,7 +152,7 @@ local function init(self)
         end
     end
 
-    local animatedCFrame = self.GuiContainer:Spring(self.PlacementCFrame, 40, 0.8)
+    local animatedCFrame = self.GuiContainer:Spring(self.PlacementCFrame, 50, 0.8)
     self:Update()
 
     self.Trove:Connect(RunService.RenderStepped, function()
@@ -119,6 +169,10 @@ local function init(self)
         ContextActionService:UnbindAction(ACTION_ROTATE)
         ContextActionService:UnbindAction(TERMINATE)
     end)
+
+    showAllHitboxes(self)
+    showConveyorDirection(self)
+    self.Trove:Add(hideAllHitboxes)
 
     ContextActionService:BindAction(ACTION_PLACE, CAS_ACTION, false, Enum.UserInputType.MouseButton1)
     ContextActionService:BindAction(ACTION_ROTATE, CAS_ACTION, false, Enum.KeyCode.R)
