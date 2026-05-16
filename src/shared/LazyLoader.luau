@@ -12,14 +12,14 @@ local function attachLoaderFrom(module, target)
 
     function Meta:__index(key)
         if Library[key] then
-            print(`Library[{key}] =`, Library[key])
+            -- print(`Library[{key}] =`, Library[key])
             return Library[key]
         end
 
         local object = module:FindFirstChild(key)
         if object and object ~= script and VALID[object.ClassName] then
             Library[key] = object:IsA('ModuleScript') and require(object) or attachLoaderFrom(object, {})
-            print(`Library[{key}] =`, Library[key])
+            -- print(`Library[{key}] =`, Library[key])
             return Library[key]
         end
 
