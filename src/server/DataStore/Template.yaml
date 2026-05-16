@@ -29,8 +29,14 @@ PerkRandomCount: 0
 ####################################################################################
 
 # Perks
-# [string PerkName, number Stars]
-ActivePerks: []
+# [string PerkName, [number PerkLevel]]
+ActivePerks: [
+  {
+    Name: 'Overclocked',
+    Buffs: [3],
+    Debuffs: [1]
+  }
+]
 
 # Listed perks
 # The list is saved when player is about to choose their perks,
