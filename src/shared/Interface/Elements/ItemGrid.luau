@@ -78,7 +78,7 @@ return function(
 
             Padding = {
                 Enabled = true,
-                All = UDim.new(0, peek(Theme.Padding['1'])),
+                All = onyx:UDim(0, Theme.Padding['1']),
             },
 
             [Children] = {
@@ -122,7 +122,7 @@ return function(
                                     },
 
                                     Corner = {
-                                        Radius = UDim.new(0, peek(Theme.CornerRadius['1'])),
+                                        Radius = onyx:UDim(0, Theme.CornerRadius['1']),
                                     },
 
                                     [Children] = {

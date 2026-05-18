@@ -43,8 +43,8 @@ return function(scope: Types.FusionScope, title: string)
                     },
 
                     Padding = {
-                        All = UDim.new(0, peek(Theme.Padding['0.5'])),
-                        Left = UDim.new(0.025, peek(Theme.Padding['0.5'])),
+                        All = onyx:UDim(0, Theme.Padding['0.5']),
+                        Left = onyx:UDim(0.025, Theme.Padding['0.5']),
                         Bottom = UDim.new(),
                     },
 
@@ -53,7 +53,7 @@ return function(scope: Types.FusionScope, title: string)
                             Size = UDim2.new(0.2, 80, 1, 0),
 
                             Padding = {
-                                All = UDim.new(0, peek(Theme.Padding['0.75'])),
+                                All = onyx:UDim(0, Theme.Padding['0.75']),
                             },
 
                             [Children] = {
