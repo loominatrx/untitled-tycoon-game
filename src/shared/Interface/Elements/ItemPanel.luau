@@ -9,8 +9,6 @@ local Themer = OnyxUI.Themer
 local ThemeSpec = Interface.Theme
 local Children = Fusion.Children
 
-local peek = Fusion.peek
-
 return function(scope: Types.FusionScope, title: string)
     local onyx = Interface.PopulateOnyx(scope) :: Types.Fusionyx
     local container
