@@ -9,6 +9,7 @@ local Metadata = require(ReplicatedStorage.Shared.Metadata)
 local MoneyLib = require(ReplicatedStorage.Shared.MoneyLib)
 local TableUtil = require(ReplicatedStorage.Packages.TableUtil)
 local Remotes = require(ReplicatedStorage.Shared.Remotes)
+local Tracker = require(ReplicatedStorage.Shared.Tracker)
 local Types = require(ReplicatedStorage.Shared.Types)
 
 local Themer = OnyxUI.Themer
@@ -32,50 +33,54 @@ return function(scope: Types.FusionScope)
     local onyx = Interface.Utils.Helper.PopulateOnyx(scope)
     local isOpened = onyx:Value(false)
     local isHovering = onyx:Value(false)
-    local items = onyx:Value {}
+    local items = Tracker.new {}
+    local amountOfSelectedItems = onyx:Value(0)
 
-    onyx:Observer(items):onBind(function()
-        if #peek(items) == 0 then
+    items.SetChanged:Connect(function(newData)
+        amountOfSelectedItems:set(#newData)
+        if #newData == 0 then
             isOpened:set(false)
         end
     end)
 
     onyx:Observer(isOpened):onBind(function()
         local current = peek(isOpened)
-        Interface.MainKeybinds:SetEnabled(not current)
+        Interface.Keybinds.MainKeybinds:SetEnabled(not current)
+        Interface.Keybinds.ObjectSelectionKeybind:SetEnabled(current)
+
         if current == true then
             Interface.DisableInterfaces()
         end
     end)
 
-    local UI, Billboard
+    onyx:Observer(isHovering):onBind(function()
+        print(`isHovering: {peek(isHovering)}`)
+    end)
+
+    -- functions
+    local function move()
+        local item = items.Data[1]
+        items:clear()
+        Remotes.Base.WithdrawObject:InvokeServer(item)
+        PlacementClient.New:Fire(item.Name)
+    end
+
+    local function withdraw()
+        for _, item in items.Data do
+            Remotes.Base.WithdrawObject:InvokeServer(item)
+        end
+        items:clear()
+    end
+
+    local UI
     do
         Themer.Theme:is(ThemeSpec):during(function()
             local Theme = Themer.Theme:now()
-            Billboard = onyx:New('BillboardGui') {
-                AlwaysOnTop = true,
-                Adornee = onyx:Computed(function(use)
-                    local currentItems = use(items)
-                    if #currentItems == 0 then
-                        return nil
-                    end
-                    return currentItems[#currentItems]
-                end),
-                Enabled = onyx:Computed(function(use)
-                    local currentItems = use(items)
-                    if #currentItems == 0 then
-                        return false
-                    end
-                    return true
-                end),
-                Size = UDim2.fromOffset(280, OPENED_Y),
-                Parent = Players.LocalPlayer.PlayerGui,
-            }
             UI = onyx:Frame {
                 AutomaticSize = Enum.AutomaticSize.None,
-                Active = isOpened,
-                AnchorPoint = Vector2.one * 0.5,
-                Position = UDim2.fromScale(0.5, 0.5),
+                Active = true,
+                AnchorPoint = Vector2.one,
+                Position = UDim2.new(0.95, 0, 0.95, -12),
                 Size = onyx:Spring(
                     onyx:Computed(function(use)
                         local open = use(isOpened)
@@ -87,10 +92,10 @@ return function(scope: Types.FusionScope)
                 List = TableUtil.Reconcile({
                     Padding = UDim.new(0, 8),
                 }, ListParameter),
+                Visible = isOpened,
+                Parent = Interface.GuiContainer,
 
                 ClipsDescendants = true,
-
-                Parent = Billboard,
 
                 [OnEvent('MouseEnter')] = function()
                     isHovering:set(true)
@@ -136,12 +141,11 @@ return function(scope: Types.FusionScope)
                                     -- Item name
                                     onyx:Text {
                                         Text = onyx:Computed(function(use)
-                                            local currentItems = use(items)
-                                            if #currentItems > 1 then
+                                            local currentSelectedCount = use(amountOfSelectedItems)
+                                            if currentSelectedCount > 1 then
                                                 return 'Multiple items selected'
-                                            elseif #currentItems == 1 then
-                                                local id = currentItems[1].Name
-                                                print(id)
+                                            elseif currentSelectedCount == 1 then
+                                                local id = items.Data[1].Name
                                                 local meta = Metadata[id]
                                                 if meta == nil then
                                                     return 'Unknown Item'
@@ -157,16 +161,13 @@ return function(scope: Types.FusionScope)
                                     -- Item tier
                                     onyx:Text {
                                         Text = onyx:Computed(function(use)
-                                            local currentItems = use(items)
-                                            if #currentItems > 1 then
-                                                return `{#currentItems} items`
-                                            elseif #currentItems == 1 then
-                                                local id = currentItems[1].Name
+                                            local currentSelectedCount = use(amountOfSelectedItems)
+                                            if currentSelectedCount > 1 then
+                                                return `{currentSelectedCount} items`
+                                            elseif currentSelectedCount == 1 then
+                                                local id = items.Data[1].Name
                                                 local meta = Metadata[id]
-                                                -- if meta == nil then
-                                                --     return '<cannot fetch data>'
-                                                -- end
-                                                return meta.ItemTier
+                                                return meta.ItemTier or id
                                             else
                                                 return '<cannot fetch data>'
                                             end
@@ -187,11 +188,11 @@ return function(scope: Types.FusionScope)
                                     onyx:Button {
                                         List = ListParameter,
                                         Disabled = onyx:Computed(function(use)
-                                            local currentItems = use(items)
-                                            if #currentItems > 1 then
+                                            local currentSelectedCount = use(amountOfSelectedItems)
+                                            if currentSelectedCount > 1 then
                                                 return true
-                                            elseif #currentItems == 1 then
-                                                local id = currentItems[1].Name
+                                            elseif currentSelectedCount == 1 then
+                                                local id = items.Data[1].Name
                                                 local meta = Metadata[id]
                                                 return not meta.OnSale
                                             else
@@ -201,11 +202,11 @@ return function(scope: Types.FusionScope)
                                         Size = UDim2.fromScale(1, 0),
                                         Color = Theme.Colors.Base.Main,
                                         Content = onyx:Computed(function(use)
-                                            local currentItems = use(items)
-                                            if #currentItems > 1 then
+                                            local currentSelectedCount = use(amountOfSelectedItems)
+                                            if currentSelectedCount > 1 then
                                                 return { "Can't buy" }
-                                            elseif #currentItems == 1 then
-                                                local id = currentItems[1].Name
+                                            elseif currentSelectedCount == 1 then
+                                                local id = items.Data[1].Name
                                                 local meta = Metadata[id]
                                                 return { `Buy for {MoneyLib.HandleMoney(meta.Price)}` }
                                             else
@@ -218,11 +219,11 @@ return function(scope: Types.FusionScope)
                                     onyx:Button {
                                         List = ListParameter,
                                         Disabled = onyx:Computed(function(use)
-                                            local currentItems = use(items)
-                                            if #currentItems > 1 then
+                                            local currentSelectedCount = use(amountOfSelectedItems)
+                                            if currentSelectedCount > 1 then
                                                 return true
-                                            elseif #currentItems == 1 then
-                                                local id = currentItems[1].Name
+                                            elseif currentSelectedCount == 1 then
+                                                local id = items.Data[1].Name
                                                 local meta = Metadata[id]
                                                 return not meta.CanBeSold
                                             else
@@ -232,11 +233,11 @@ return function(scope: Types.FusionScope)
                                         Size = UDim2.fromScale(1, 0),
                                         Color = Theme.Colors.Base.Main,
                                         Content = onyx:Computed(function(use)
-                                            local currentItems = use(items)
-                                            if #currentItems > 1 then
+                                            local currentSelectedCount = use(amountOfSelectedItems)
+                                            if currentSelectedCount > 1 then
                                                 return { "Can't sell" }
-                                            elseif #currentItems == 1 then
-                                                local id = currentItems[1].Name
+                                            elseif currentSelectedCount == 1 then
+                                                local id = items.Data[1].Name
                                                 local meta = Metadata[id]
                                                 return { `Sell for {MoneyLib.HandleMoney(meta.Price / 2)}` }
                                             else
@@ -251,12 +252,7 @@ return function(scope: Types.FusionScope)
                                         Color = Theme.Colors.Base.Main,
                                         Content = { 'Move Item' },
                                         ContentSize = 24,
-                                        OnActivate = function()
-                                            local item = peek(items)[1]
-                                            items:set {}
-                                            Remotes.Base.WithdrawObject:InvokeServer(item)
-                                            PlacementClient.New:Fire(item.Name)
-                                        end,
+                                        OnActivate = move,
                                     },
                                     onyx:Button {
                                         List = ListParameter,
@@ -264,9 +260,7 @@ return function(scope: Types.FusionScope)
                                         Color = Theme.Colors.Base.Main,
                                         Content = { 'Withdraw Item' },
                                         ContentSize = 24,
-                                        OnActivate = function()
-                                            Remotes.Base.WithdrawObject:InvokeServer(peek(items)[1])
-                                        end,
+                                        OnActivate = withdraw,
                                     },
                                 },
                             },
@@ -278,10 +272,12 @@ return function(scope: Types.FusionScope)
     end
     return {
         UI = UI,
-        Billboard = Billboard,
         SelectedItems = items,
         IsOpened = isOpened,
         IsHovering = isHovering,
         Scope = scope,
+
+        MoveItems = move,
+        WithdrawItems = withdraw,
     }
 end

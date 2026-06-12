@@ -120,7 +120,7 @@ end
 
 function ClientPlacement:Terminate()
     self.Trove:Clean()
-    Interface.MainKeybinds:SetEnabled(true)
+    Interface.Keybinds.MainKeybinds:SetEnabled(true)
 end
 
 local function init(self)
@@ -181,7 +181,7 @@ local function init(self)
     ContextActionService:BindAction(TERMINATE, CAS_ACTION, false, Enum.KeyCode.Q)
 
     Interface.DisableInterfaces()
-    Interface.MainKeybinds:SetEnabled(false)
+    Interface.Keybinds.MainKeybinds:SetEnabled(false)
 
     PLACEMENT_LOCK:set(self)
 end

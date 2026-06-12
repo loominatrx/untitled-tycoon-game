@@ -27,7 +27,7 @@ local function __runHook(statsList, hookEnum: GameEnum.PerkHooks, context: any)
         local stats = PerkStats[statsEnum]
         local hookFn = stats and stats.Hooks and stats.Hooks[hookEnum]
 
-        print(statsEnum, statsValue, hookFn)
+        -- print(statsEnum, statsValue, hookFn)
 
         if hookFn ~= nil then
             hookFn(context, statsValue)

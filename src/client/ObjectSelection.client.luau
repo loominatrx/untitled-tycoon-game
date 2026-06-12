@@ -9,15 +9,17 @@ local Input = require(ReplicatedStorage.Packages.Input)
 local TableUtil = require(ReplicatedStorage.Packages.TableUtil)
 local Interface = require(ReplicatedStorage.Shared.Interface)
 local PlacementClient = script.Parent.PlacementClient
+local isPlacementRunning = PlacementClient:WaitForChild('IsRunning')
 local Camera = workspace.CurrentCamera
 
 local Prefabs = ReplicatedStorage.Shared.Prefabs
-local peek = Fusion.peek
 
 local Mouse = Input.Mouse.new()
 
-local currentHitbox = nil
+local currentHitbox = Prefabs.boxOutline:Clone()
 local actionUI = Interface.Elements.ObjectActions(Fusion:scoped())
+
+local isSelectMode = false
 
 local function castMouse(): RaycastResult?
     local mouseLocation = UserInputService:GetMouseLocation()
@@ -34,46 +36,84 @@ local function castMouse(): RaycastResult?
     return workspace:Raycast(ray.Origin, ray.Direction * 1000, params)
 end
 
-Interface.MainKeybinds:AddKeybind {
-    Name = 'Select Items from Hitbox',
+actionUI.SelectedItems.ValueAdded:Connect(function(object)
+    local hitbox = Prefabs.boxOutline:Clone()
+    hitbox.Parent = object
+    hitbox.Adornee = object.Hitbox
+end)
+
+actionUI.SelectedItems.ValueRemoved:Connect(function(object)
+    local hitbox = object.boxOutline
+    hitbox:Destroy()
+end)
+
+Interface.Keybinds.MainKeybinds:AddKeybind {
+    Name = 'Begin Drag Drag',
+    Key = Enum.UserInputType.MouseButton1,
+    Callback = function(state: Enum.UserInputState)
+        if state == Enum.UserInputState.Begin then
+            isSelectMode = true
+            while Mouse:IsLeftDown() do
+                local mouseHit = castMouse()
+                if mouseHit and mouseHit.Instance then
+                    actionUI.SelectedItems:add(mouseHit.Instance.Parent)
+                end
+                RunService.RenderStepped:Wait()
+            end
+            isSelectMode = false
+        end
+    end,
+}
+
+Interface.Keybinds.MainKeybinds:AddKeybind {
+    Name = 'End Drag',
     Key = Enum.UserInputType.MouseButton1,
     Callback = function(state: Enum.UserInputState)
         if state == Enum.UserInputState.End then
-            if peek(actionUI.SelectedItems)[1] ~= nil then
+            if actionUI.SelectedItems.Data[1] ~= nil then
                 actionUI.IsOpened:set(true)
             end
         end
     end,
 }
 
+Interface.Keybinds.ObjectSelectionKeybind:AddKeybind {
+    Name = 'Move',
+    Key = Enum.KeyCode.R,
+    Callback = function(state: Enum.UserInputState)
+        if state ~= Enum.UserInputState.Begin then
+            return
+        end
+
+        actionUI.MoveItems()
+    end,
+}
+
+Interface.Keybinds.ObjectSelectionKeybind:AddKeybind {
+    Name = 'Move',
+    Key = Enum.KeyCode.Z,
+    Callback = function(state: Enum.UserInputState)
+        if state ~= Enum.UserInputState.Begin then
+            return
+        end
+
+        actionUI.WithdrawItems()
+    end,
+}
+
 function Update()
     local mouseHit = castMouse()
-    -- local isRunning = PlacementClient.IsRunning:Invoke()
-    if mouseHit and mouseHit.Position then
-        -- if isRunning then
-        --     return
-        -- end
-
-        if currentHitbox == nil then
-            currentHitbox = Prefabs.boxOutline:Clone()
-        end
-
-        if not peek(actionUI.IsOpened) and peek(actionUI.SelectedItems)[1] ~= mouseHit.Instance.Parent then
-            currentHitbox.Adornee = mouseHit.Instance
-            currentHitbox.Parent = mouseHit.Instance
-            actionUI.SelectedItems:set { mouseHit.Instance.Parent }
-        end
+    local isRunning = isPlacementRunning:Invoke()
+    if mouseHit and mouseHit.Instance and not isRunning then
+        currentHitbox.Adornee = mouseHit.Instance
+        currentHitbox.Parent = mouseHit.Instance
     else
-        if
-            (not peek(actionUI.IsOpened) and peek(actionUI.SelectedItems)[1] ~= nil)
-            or (Mouse:IsLeftDown() and peek(actionUI.IsHovering) == false)
-        then
-            if currentHitbox ~= nil then
-                currentHitbox:Destroy()
-                currentHitbox = nil
-            end
-            actionUI.SelectedItems:set {}
+        if Mouse:IsLeftDown() and not isSelectMode then
+            actionUI.SelectedItems:clear()
         end
+
+        currentHitbox.Adornee = nil
+        currentHitbox.Parent = nil
     end
 end
 

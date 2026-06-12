@@ -13,16 +13,10 @@ Interface.Scopes = {
     Inventory = nil,
     Shop = nil,
 }
+Interface.Keybinds = require(script.Parent.KeybindData)
 
 -- Keybinds
-
-Interface.MainKeybinds = Keybinds:CreateNewKeybindGroup {
-    Name = 'MainKeybinds',
-    Enabled = false,
-    IsGameProcessed = false,
-}
-
-Interface.MainKeybinds:AddKeybind {
+Interface.Keybinds.MainKeybinds:AddKeybind {
     Name = 'Toggle Inventory',
     Key = Enum.KeyCode.E,
     Callback = function(state: Enum.UserInputState)
@@ -38,7 +32,7 @@ Interface.MainKeybinds:AddKeybind {
     end,
 }
 
-Interface.MainKeybinds:AddKeybind {
+Interface.Keybinds.MainKeybinds:AddKeybind {
     Name = 'Toggle Shop',
     Key = Enum.KeyCode.R,
     Callback = function(state: Enum.UserInputState)
