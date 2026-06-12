@@ -1,12 +1,9 @@
 local Players = game:GetService('Players')
 local ReplicatedStorage = game:GetService('ReplicatedStorage')
-local StarterGui = game:GetService('StarterGui')
 
 local Keybinds = require(script.Parent.Keybinds)
 local Fusion = require(ReplicatedStorage.Packages.Fusion)
-local OnyxUI = require(ReplicatedStorage.Packages.OnyxUI)
 local AttachLoaderFrom = require(script.Parent.LazyLoader)
-local Types = require(script.Parent.Types)
 local player = Players.LocalPlayer
 
 local Interface = {} :: any
@@ -16,15 +13,6 @@ Interface.Scopes = {
     Inventory = nil,
     Shop = nil,
 }
-
-local function SafeSetCoreGui(CoreGuiType: Enum.CoreGuiType, enabled: boolean)
-    local success, result = pcall(StarterGui.SetCoreGuiEnabled, StarterGui, CoreGuiType, enabled)
-    if not success then
-        warn(`CoreGui visibility cannot be set: {result}; retrying...`)
-        task.wait(0.5)
-        SafeSetCoreGui(CoreGuiType, enabled)
-    end
-end
 
 -- Keybinds
 
@@ -79,19 +67,6 @@ function Interface.init()
     Interface.GuiContainer = container
 end
 
-function Interface.PopulateOnyx(scope: Types.FusionScope)
-    return Fusion.innerScope(scope, Fusion, OnyxUI.Util, OnyxUI.Components) :: Types.Fusionyx
-end
-
-function Interface.SetCoreGuiEnabled(enabled: boolean)
-    SafeSetCoreGui(Enum.CoreGuiType.PlayerList, enabled)
-    SafeSetCoreGui(Enum.CoreGuiType.Chat, enabled)
-    SafeSetCoreGui(Enum.CoreGuiType.EmotesMenu, enabled)
-    SafeSetCoreGui(Enum.CoreGuiType.SelfView, enabled)
-    SafeSetCoreGui(Enum.CoreGuiType.Captures, enabled)
-    SafeSetCoreGui(Enum.CoreGuiType.AvatarSwitcher, enabled)
-end
-
 function Interface.IsInterfaceActive(interfaceName: string)
     return Interface.Scopes[interfaceName] ~= nil
 end
@@ -121,6 +96,15 @@ function Interface.DisableInterfaces()
         Interface.ToggleInventory()
     end
     if Interface.IsInterfaceActive('Shop') then
+        Interface.ToggleShop()
+    end
+end
+
+function Interface.EnableInterfaces()
+    if not Interface.IsInterfaceActive('Inventory') then
+        Interface.ToggleInventory()
+    end
+    if not Interface.IsInterfaceActive('Shop') then
         Interface.ToggleShop()
     end
 end
