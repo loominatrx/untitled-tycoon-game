@@ -1,17 +1,21 @@
 local Players = game:GetService('Players')
 local ReplicatedStorage = game:GetService('ReplicatedStorage')
+local PlacementClient = Players.LocalPlayer.PlayerScripts.Client.PlacementClient
+
 local Fusion = require(ReplicatedStorage.Packages.Fusion)
 local OnyxUI = require(ReplicatedStorage.Packages.OnyxUI)
-local TableUtil = require(ReplicatedStorage.Packages.TableUtil)
-local ThemeSpec = require(ReplicatedStorage.Shared.Interface.Theme)
+local Interface = require(ReplicatedStorage.Shared.Interface)
 local Metadata = require(ReplicatedStorage.Shared.Metadata)
 local MoneyLib = require(ReplicatedStorage.Shared.MoneyLib)
-local Interface = require(script.Parent.Parent)
+local TableUtil = require(ReplicatedStorage.Packages.TableUtil)
+local Remotes = require(ReplicatedStorage.Shared.Remotes)
 local Types = require(ReplicatedStorage.Shared.Types)
 
 local Themer = OnyxUI.Themer
+local ThemeSpec = Interface.Theme
 
 local Children = Fusion.Children
+local OnEvent = Fusion.OnEvent
 local peek = Fusion.peek
 
 local CLOSED_Y = 72
@@ -25,7 +29,7 @@ local ListParameter = {
 }
 
 return function(scope: Types.FusionScope)
-    local onyx = Interface.PopulateOnyx(scope)
+    local onyx = Interface.Utils.Helper.PopulateOnyx(scope)
     local isOpened = onyx:Value(false)
     local isHovering = onyx:Value(false)
     local items = onyx:Value {}
@@ -33,6 +37,14 @@ return function(scope: Types.FusionScope)
     onyx:Observer(items):onBind(function()
         if #peek(items) == 0 then
             isOpened:set(false)
+        end
+    end)
+
+    onyx:Observer(isOpened):onBind(function()
+        local current = peek(isOpened)
+        Interface.MainKeybinds:SetEnabled(not current)
+        if current == true then
+            Interface.DisableInterfaces()
         end
     end)
 
@@ -59,8 +71,9 @@ return function(scope: Types.FusionScope)
                 Size = UDim2.fromOffset(280, OPENED_Y),
                 Parent = Players.LocalPlayer.PlayerGui,
             }
-            UI = onyx:BaseButton {
+            UI = onyx:Frame {
                 AutomaticSize = Enum.AutomaticSize.None,
+                Active = isOpened,
                 AnchorPoint = Vector2.one * 0.5,
                 Position = UDim2.fromScale(0.5, 0.5),
                 Size = onyx:Spring(
@@ -74,15 +87,18 @@ return function(scope: Types.FusionScope)
                 List = TableUtil.Reconcile({
                     Padding = UDim.new(0, 8),
                 }, ListParameter),
-                Hovering = isHovering,
 
                 ClipsDescendants = true,
 
-                OnActivate = function()
-                    isOpened:set(true)
+                Parent = Billboard,
+
+                [OnEvent('MouseEnter')] = function()
+                    isHovering:set(true)
                 end,
 
-                Parent = Billboard,
+                [OnEvent('MouseLeave')] = function()
+                    isHovering:set(false)
+                end,
 
                 [Children] = {
                     onyx:Card {
@@ -235,6 +251,12 @@ return function(scope: Types.FusionScope)
                                         Color = Theme.Colors.Base.Main,
                                         Content = { 'Move Item' },
                                         ContentSize = 24,
+                                        OnActivate = function()
+                                            local item = peek(items)[1]
+                                            items:set {}
+                                            Remotes.Base.WithdrawObject:InvokeServer(item)
+                                            PlacementClient.New:Fire(item.Name)
+                                        end,
                                     },
                                     onyx:Button {
                                         List = ListParameter,
@@ -242,6 +264,9 @@ return function(scope: Types.FusionScope)
                                         Color = Theme.Colors.Base.Main,
                                         Content = { 'Withdraw Item' },
                                         ContentSize = 24,
+                                        OnActivate = function()
+                                            Remotes.Base.WithdrawObject:InvokeServer(peek(items)[1])
+                                        end,
                                     },
                                 },
                             },

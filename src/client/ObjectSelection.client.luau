@@ -8,6 +8,7 @@ local Fusion = require(ReplicatedStorage.Packages.Fusion)
 local Input = require(ReplicatedStorage.Packages.Input)
 local TableUtil = require(ReplicatedStorage.Packages.TableUtil)
 local Interface = require(ReplicatedStorage.Shared.Interface)
+local PlacementClient = script.Parent.PlacementClient
 local Camera = workspace.CurrentCamera
 
 local Prefabs = ReplicatedStorage.Shared.Prefabs
@@ -47,7 +48,12 @@ Interface.MainKeybinds:AddKeybind {
 
 function Update()
     local mouseHit = castMouse()
+    -- local isRunning = PlacementClient.IsRunning:Invoke()
     if mouseHit and mouseHit.Position then
+        -- if isRunning then
+        --     return
+        -- end
+
         if currentHitbox == nil then
             currentHitbox = Prefabs.boxOutline:Clone()
         end
