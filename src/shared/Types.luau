@@ -32,6 +32,8 @@ export type ItemMetadata = {
     -- Item stats
     ItemTier: number,
     ItemType: number,
+
+    [string]: any,
 }
 
 export type DropperStats = {
