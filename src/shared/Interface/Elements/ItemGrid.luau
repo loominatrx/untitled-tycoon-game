@@ -23,7 +23,7 @@ return function(
     size: number,
     context: GameEnum.ItemPanelContext
 )
-    local onyx = Interface.PopulateOnyx(scope) :: Types.Fusionyx
+    local onyx = Interface.Utils.Helper.PopulateOnyx(scope) :: Types.Fusionyx
     local expanding = onyx:Value(false)
 
     name = OnyxUI.Util.EnsureValue(onyx, name)

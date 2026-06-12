@@ -10,7 +10,7 @@ local ThemeSpec = Interface.Theme
 local Children = Fusion.Children
 
 return function(scope: Types.FusionScope, title: string)
-    local onyx = Interface.PopulateOnyx(scope) :: Types.Fusionyx
+    local onyx = Interface.Utils.Helper.PopulateOnyx(scope) :: Types.Fusionyx
     local container
     Themer.Theme:is(ThemeSpec):during(function()
         local Theme = Themer.Theme:now()
