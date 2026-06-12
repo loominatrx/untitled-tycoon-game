@@ -38,6 +38,7 @@ end)
 local ClientPlacement = {}
 ClientPlacement.__index = ClientPlacement
 
+local PLACEMENT_LOCK = Fusion:scoped():Value(nil)
 local function castMouse(): RaycastResult?
     local mouseLocation = UserInputService:GetMouseLocation()
     local ray = Camera:ViewportPointToRay(mouseLocation.X, mouseLocation.Y)
@@ -165,6 +166,7 @@ local function init(self)
     end)
 
     self.Trove:Add(function()
+        PLACEMENT_LOCK:set(nil)
         ContextActionService:UnbindAction(ACTION_PLACE)
         ContextActionService:UnbindAction(ACTION_ROTATE)
         ContextActionService:UnbindAction(TERMINATE)
@@ -180,12 +182,17 @@ local function init(self)
 
     Interface.DisableInterfaces()
     Interface.MainKeybinds:SetEnabled(false)
+
+    PLACEMENT_LOCK:set(self)
 end
 
 local function new(objectName: string)
     local previewModel = Prefabs:FindFirstChild(objectName, true)
     if previewModel == nil then
         error('Cannot find object in prefabs...')
+    end
+    if peek(PLACEMENT_LOCK) ~= nil then
+        error('Placement is still in progress, aborting...')
     end
 
     local self = setmetatable({}, ClientPlacement)
@@ -202,6 +209,18 @@ local function new(objectName: string)
     init(self)
 
     return self
+end
+
+local newEvent = Instance.new('BindableEvent')
+newEvent.Name = 'New'
+newEvent.Parent = script
+newEvent.Event:Connect(new)
+
+local isRunning = Instance.new('BindableFunction')
+isRunning.Name = 'IsRunning'
+isRunning.Parent = script
+isRunning.OnInvoke = function()
+    return peek(PLACEMENT_LOCK) ~= nil
 end
 
 return {
